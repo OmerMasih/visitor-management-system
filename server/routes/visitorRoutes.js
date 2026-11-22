@@ -241,4 +241,74 @@ router.patch("/:id/checkout", async (req, res) => {
   }
 });
 
+// Request an escort for a visitor
+router.patch("/:id/escort-request", async (req, res) => {
+  try {
+    const visitor = await Visitor.findByIdAndUpdate(
+      req.params.id,
+      { status: "Escort Requested" },
+      { new: true, runValidators: true },
+    );
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Escort requested successfully",
+      visitor,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Could not request escort",
+    });
+  }
+});
+
+// Assign an employee as the visitor's escort
+router.patch("/:id/escort", async (req, res) => {
+  try {
+    const { escortName } = req.body;
+
+    if (!escortName || !escortName.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Escort employee name is required",
+      });
+    }
+
+    const visitor = await Visitor.findByIdAndUpdate(
+      req.params.id,
+      {
+        escortName: escortName.trim(),
+        status: "Escort Accepted",
+      },
+      { new: true, runValidators: true },
+    );
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Escort assigned successfully",
+      visitor,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Could not assign escort",
+    });
+  }
+});
+
 export default router;

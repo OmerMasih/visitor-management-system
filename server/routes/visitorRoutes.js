@@ -1,13 +1,17 @@
 import express from "express";
+import mongoose from "mongoose";
 import Visitor from "../models/Visitor.js";
 
 const router = express.Router();
 
+// ==========================================
 // POST: Register a new visitor
+// ==========================================
 router.post("/", async (req, res) => {
   try {
     const {
       fullName,
+      visitorSignature,
       company,
       personToVisit,
       department,
@@ -17,14 +21,20 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!fullName || !personToVisit || !department || !purposeOfVisit) {
+    if (
+      !fullName?.trim() ||
+      !visitorSignature?.trim() ||
+      !personToVisit?.trim() ||
+      !department?.trim() ||
+      !purposeOfVisit?.trim()
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please complete all required fields.",
       });
     }
 
-    // Require policy acknowledgments
+    // Validate policy acknowledgments
     if (confidentialityAccepted !== true || escortPolicyAccepted !== true) {
       return res.status(400).json({
         success: false,
@@ -32,47 +42,201 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Create visitor
+    // Save visitor in MongoDB
     const visitor = await Visitor.create({
       fullName,
+      visitorSignature,
       company,
       personToVisit,
       department,
       purposeOfVisit,
       confidentialityAccepted,
       escortPolicyAccepted,
+      status: "Registered",
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Visitor registered successfully!",
       visitor,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Visitor registration error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Unable to register visitor.",
-      error: error.message,
     });
   }
 });
 
+// ==========================================
 // GET: Retrieve all visitors
+// ==========================================
 router.get("/", async (req, res) => {
   try {
     const visitors = await Visitor.find().sort({
       createdAt: -1,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: visitors.length,
       visitors,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Retrieve visitors error:", error);
+
+    return res.status(500).json({
       success: false,
       message: "Unable to retrieve visitors.",
+    });
+  }
+});
+
+// ==========================================
+// GET: Retrieve one visitor by ID
+// ==========================================
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    const visitor = await Visitor.findById(id);
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      visitor,
+    });
+  } catch (error) {
+    console.error("Retrieve visitor error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve visitor.",
+    });
+  }
+});
+
+// ==========================================
+// PATCH: Update visitor status
+// ==========================================
+router.patch("/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      "Registered",
+      "Waiting for Department",
+      "Escort Requested",
+      "Escort Accepted",
+      "Escort in Progress",
+      "Checked Out",
+      "Cancelled",
+    ];
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor status.",
+      });
+    }
+
+    const visitor = await Visitor.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true },
+    );
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Visitor status updated successfully.",
+      visitor,
+    });
+  } catch (error) {
+    console.error("Update visitor status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update visitor status.",
+    });
+  }
+});
+
+// ==========================================
+// PATCH: Check out a visitor
+// ==========================================
+router.patch("/:id/checkout", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    const visitor = await Visitor.findById(id);
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    if (visitor.status === "Checked Out") {
+      return res.status(400).json({
+        success: false,
+        message: "Visitor has already checked out.",
+      });
+    }
+
+    visitor.timeOut = new Date();
+    visitor.status = "Checked Out";
+
+    await visitor.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Visitor checked out successfully.",
+      visitor,
+    });
+  } catch (error) {
+    console.error("Visitor checkout error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to check out visitor.",
     });
   }
 });

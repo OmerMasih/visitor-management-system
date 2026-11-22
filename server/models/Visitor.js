@@ -9,6 +9,12 @@ const visitorSchema = new mongoose.Schema(
       trim: true,
     },
 
+    visitorSignature: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     company: {
       type: String,
       trim: true,

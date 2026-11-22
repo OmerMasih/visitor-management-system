@@ -144,6 +144,8 @@ function AdminDashboard() {
                   <th>Purpose</th>
                   <th>Time In</th>
                   <th>Status</th>
+                  <th>Escort</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
@@ -165,6 +167,10 @@ function AdminDashboard() {
                         {visitor.status}
                       </span>
                     </td>
+
+                    <td>{visitor.escortName || "Not assigned"}</td>
+
+                    <td>{/* Escort action buttons will go here */}</td>
                   </tr>
                 ))}
               </tbody>

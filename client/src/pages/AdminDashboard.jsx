@@ -259,6 +259,33 @@ function AdminDashboard() {
                     <td>{visitor.escortName || "Not assigned"}</td>
 
                     <td>{/* Escort action buttons will go here */}</td>
+                    <td>
+                      {visitor.status === "Registered" && (
+                        <button onClick={() => requestEscort(visitor._id)}>
+                          Request Escort
+                        </button>
+                      )}
+
+                      {visitor.status === "Escort Requested" && (
+                        <button onClick={() => assignEscort(visitor._id)}>
+                          Assign Escort
+                        </button>
+                      )}
+
+                      {visitor.status === "Escort Accepted" && (
+                        <button onClick={() => startEscort(visitor._id)}>
+                          Start Escort
+                        </button>
+                      )}
+
+                      {visitor.status === "Escort in Progress" && (
+                        <button onClick={() => checkoutVisitor(visitor._id)}>
+                          Check Out
+                        </button>
+                      )}
+
+                      {visitor.status === "Checked Out" && "Completed"}
+                    </td>
                   </tr>
                 ))}
               </tbody>

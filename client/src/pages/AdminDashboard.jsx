@@ -28,6 +28,94 @@ function AdminDashboard() {
     }
   };
 
+  const requestEscort = async (visitorId) => {
+    try {
+      const response = await fetch(`${API_URL}/${visitorId}/escort-request`, {
+        method: "PATCH",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      await fetchVisitors();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const assignEscort = async (visitorId) => {
+    const escortName = window.prompt("Enter employee name:");
+
+    if (!escortName || !escortName.trim()) return;
+
+    try {
+      const response = await fetch(`${API_URL}/${visitorId}/escort`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ escortName }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      await fetchVisitors();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const startEscort = async (visitorId) => {
+    try {
+      const response = await fetch(`${API_URL}/${visitorId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "Escort in Progress",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      await fetchVisitors();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
+  const checkoutVisitor = async (visitorId) => {
+    if (!window.confirm("Confirm visitor checkout?")) return;
+
+    try {
+      const response = await fetch(`${API_URL}/${visitorId}/checkout`, {
+        method: "PATCH",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message);
+      }
+
+      await fetchVisitors();
+    } catch (error) {
+      setError(error.message);
+    }
+  };
+
   useEffect(() => {
     fetchVisitors();
   }, []);

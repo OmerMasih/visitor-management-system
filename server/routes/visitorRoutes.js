@@ -20,7 +20,6 @@ router.post("/", async (req, res) => {
       escortPolicyAccepted,
     } = req.body;
 
-    // Validate required fields
     if (
       !fullName?.trim() ||
       !visitorSignature?.trim() ||
@@ -34,7 +33,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Validate policy acknowledgments
     if (confidentialityAccepted !== true || escortPolicyAccepted !== true) {
       return res.status(400).json({
         success: false,
@@ -42,7 +40,6 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // Save visitor in MongoDB
     const visitor = await Visitor.create({
       fullName,
       visitorSignature,
@@ -62,7 +59,6 @@ router.post("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Visitor registration error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Unable to register visitor.",
@@ -86,7 +82,6 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Retrieve visitors error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Unable to retrieve visitors.",
@@ -123,7 +118,6 @@ router.get("/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("Retrieve visitor error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Unable to retrieve visitor.",
@@ -183,7 +177,6 @@ router.patch("/:id/status", async (req, res) => {
     });
   } catch (error) {
     console.error("Update visitor status error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Unable to update visitor status.",
@@ -221,19 +214,27 @@ router.patch("/:id/checkout", async (req, res) => {
       });
     }
 
-    visitor.timeOut = new Date();
-    visitor.status = "Checked Out";
-
-    await visitor.save();
+    const updatedVisitor = await Visitor.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          timeOut: new Date(),
+          status: "Checked Out",
+        },
+      },
+      {
+        new: true,
+        runValidators: false,
+      },
+    );
 
     return res.status(200).json({
       success: true,
       message: "Visitor checked out successfully.",
-      visitor,
+      visitor: updatedVisitor,
     });
   } catch (error) {
     console.error("Visitor checkout error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Unable to check out visitor.",
@@ -241,7 +242,9 @@ router.patch("/:id/checkout", async (req, res) => {
   }
 });
 
-// Request an escort for a visitor
+// ==========================================
+// PATCH: Request an escort
+// ==========================================
 router.patch("/:id/escort-request", async (req, res) => {
   try {
     const visitor = await Visitor.findByIdAndUpdate(
@@ -253,24 +256,27 @@ router.patch("/:id/escort-request", async (req, res) => {
     if (!visitor) {
       return res.status(404).json({
         success: false,
-        message: "Visitor not found",
+        message: "Visitor not found.",
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Escort requested successfully",
+      message: "Escort requested successfully.",
       visitor,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Escort request error:", error);
+    return res.status(500).json({
       success: false,
-      message: "Could not request escort",
+      message: "Could not request escort.",
     });
   }
 });
 
-// Assign an employee as the visitor's escort
+// ==========================================
+// PATCH: Assign an escort
+// ==========================================
 router.patch("/:id/escort", async (req, res) => {
   try {
     const { escortName } = req.body;
@@ -278,7 +284,7 @@ router.patch("/:id/escort", async (req, res) => {
     if (!escortName || !escortName.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Escort employee name is required",
+        message: "Escort employee name is required.",
       });
     }
 
@@ -294,19 +300,20 @@ router.patch("/:id/escort", async (req, res) => {
     if (!visitor) {
       return res.status(404).json({
         success: false,
-        message: "Visitor not found",
+        message: "Visitor not found.",
       });
     }
 
-    res.json({
+    return res.json({
       success: true,
-      message: "Escort assigned successfully",
+      message: "Escort assigned successfully.",
       visitor,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Assign escort error:", error);
+    return res.status(500).json({
       success: false,
-      message: "Could not assign escort",
+      message: "Could not assign escort.",
     });
   }
 });

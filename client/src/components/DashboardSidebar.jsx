@@ -27,12 +27,12 @@ function DashboardSidebar() {
           Visitor History
         </NavLink>
 
-        <p className="sidebar-label">COMING SOON</p>
-
-        <div className="sidebar-disabled">
+        <NavLink to="/admin/reports" className="sidebar-link">
           <span>▤</span>
           Reports
-        </div>
+        </NavLink>
+
+        <p className="sidebar-label">COMING SOON</p>
 
         <div className="sidebar-disabled">
           <span>⚙</span>

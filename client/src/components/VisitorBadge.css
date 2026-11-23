@@ -1,0 +1,173 @@
+.badge-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.badge-modal {
+  width: 100%;
+  max-width: 520px;
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+}
+
+.badge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.badge-actions button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #17365d;
+  color: white;
+  font-weight: 600;
+}
+
+.badge-actions button:last-child {
+  background: #666;
+}
+
+.visitor-badge-print-area {
+  display: flex;
+  justify-content: center;
+}
+
+.visitor-badge {
+  width: 340px;
+  min-height: 480px;
+  border: 3px solid #17365d;
+  border-radius: 14px;
+  overflow: hidden;
+  background: white;
+  color: #172b4d;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.badge-header {
+  background: #17365d;
+  color: white;
+  padding: 22px 12px;
+}
+
+.badge-header h2 {
+  font-size: 30px;
+  margin: 0;
+  letter-spacing: 3px;
+}
+
+.badge-header p {
+  font-size: 10px;
+  letter-spacing: 2px;
+  margin: 8px 0 0;
+}
+
+.badge-number {
+  margin: 22px 15px;
+  padding: 14px 5px;
+  border: 2px dashed #17365d;
+  border-radius: 8px;
+  font-size: 27px;
+  font-weight: 800;
+  color: #17365d;
+}
+
+.badge-visitor-info {
+  padding: 5px 15px 18px;
+}
+
+.badge-visitor-info h1 {
+  font-size: 25px;
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.badge-visitor-info p {
+  color: #555;
+  margin: 0;
+}
+
+.badge-details {
+  text-align: left;
+  padding: 0 22px;
+}
+
+.badge-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.badge-details span {
+  font-size: 10px;
+  color: #777;
+  letter-spacing: 1px;
+}
+
+.badge-details strong {
+  font-size: 14px;
+}
+
+.badge-footer {
+  margin-top: 18px;
+  background: #17365d;
+  color: white;
+  padding: 15px 8px;
+}
+
+.badge-footer p {
+  font-size: 10px;
+  margin: 0 0 7px;
+}
+
+.badge-footer strong {
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+@media print {
+  @page {
+    size: portrait;
+    margin: 10mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .visitor-badge-print-area,
+  .visitor-badge-print-area * {
+    visibility: visible !important;
+  }
+
+  .visitor-badge-print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .visitor-badge {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .badge-actions {
+    display: none !important;
+  }
+}

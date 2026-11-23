@@ -1,6 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import Visitor from "../models/Visitor.js";
+import Counter from "../models/Counter.js";
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ router.post("/", async (req, res) => {
       escortPolicyAccepted,
     } = req.body;
 
+    // Validate required fields
     if (
       !fullName?.trim() ||
       !visitorSignature?.trim() ||
@@ -33,6 +35,7 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Validate policy acknowledgments
     if (confidentialityAccepted !== true || escortPolicyAccepted !== true) {
       return res.status(400).json({
         success: false,
@@ -40,6 +43,20 @@ router.post("/", async (req, res) => {
       });
     }
 
+    // Generate the next badge number
+    const counter = await Counter.findOneAndUpdate(
+      { _id: "visitorBadge" },
+      { $inc: { sequence: 1 } },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+
+    const badgeNumber = `VIS-${String(counter.sequence).padStart(4, "0")}`;
+
+    // Save visitor in MongoDB
     const visitor = await Visitor.create({
       fullName,
       visitorSignature,
@@ -49,6 +66,7 @@ router.post("/", async (req, res) => {
       purposeOfVisit,
       confidentialityAccepted,
       escortPolicyAccepted,
+      badgeNumber,
       status: "Registered",
     });
 
@@ -59,6 +77,7 @@ router.post("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Visitor registration error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to register visitor.",
@@ -82,6 +101,7 @@ router.get("/", async (req, res) => {
     });
   } catch (error) {
     console.error("Retrieve visitors error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to retrieve visitors.",
@@ -118,6 +138,7 @@ router.get("/:id", async (req, res) => {
     });
   } catch (error) {
     console.error("Retrieve visitor error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to retrieve visitor.",
@@ -177,6 +198,7 @@ router.patch("/:id/status", async (req, res) => {
     });
   } catch (error) {
     console.error("Update visitor status error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to update visitor status.",
@@ -235,6 +257,7 @@ router.patch("/:id/checkout", async (req, res) => {
     });
   } catch (error) {
     console.error("Visitor checkout error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to check out visitor.",
@@ -260,13 +283,14 @@ router.patch("/:id/escort-request", async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Escort requested successfully.",
       visitor,
     });
   } catch (error) {
     console.error("Escort request error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Could not request escort.",
@@ -275,7 +299,7 @@ router.patch("/:id/escort-request", async (req, res) => {
 });
 
 // ==========================================
-// PATCH: Assign an escort
+// PATCH: Assign an employee as escort
 // ==========================================
 router.patch("/:id/escort", async (req, res) => {
   try {
@@ -304,13 +328,14 @@ router.patch("/:id/escort", async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "Escort assigned successfully.",
       visitor,
     });
   } catch (error) {
     console.error("Assign escort error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Could not assign escort.",

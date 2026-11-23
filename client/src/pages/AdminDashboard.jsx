@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import VisitorBadge from "../components/VisitorBadge";
 import "./AdminDashboard.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
@@ -9,8 +10,8 @@ function AdminDashboard() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedVisitor, setSelectedVisitor] = useState(null);
 
-  // Fetch all visitors
   const fetchVisitors = async () => {
     try {
       setLoading(true);
@@ -137,7 +138,6 @@ function AdminDashboard() {
   // Format date and time
   const formatDate = (date) => {
     if (!date) return "—";
-
     return new Date(date).toLocaleString();
   };
 
@@ -175,7 +175,6 @@ function AdminDashboard() {
 
   return (
     <div className="admin-dashboard">
-      {/* Dashboard Header */}
       <header className="dashboard-header">
         <div>
           <h1>Visitor Management Dashboard</h1>
@@ -191,7 +190,6 @@ function AdminDashboard() {
         </button>
       </header>
 
-      {/* Statistics */}
       <section className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Visitors</h3>
@@ -214,7 +212,6 @@ function AdminDashboard() {
         </div>
       </section>
 
-      {/* Search and Filter */}
       <section className="dashboard-controls">
         <input
           type="text"
@@ -238,10 +235,8 @@ function AdminDashboard() {
         </select>
       </section>
 
-      {/* Error Message */}
       {error && <p className="error-message">{error}</p>}
 
-      {/* Visitor Table */}
       <section className="table-wrapper">
         <table className="visitor-table">
           <thead>
@@ -279,15 +274,10 @@ function AdminDashboard() {
                   </td>
 
                   <td>{visitor.company || "—"}</td>
-
                   <td>{visitor.personToVisit}</td>
-
                   <td>{visitor.department}</td>
-
                   <td>{visitor.purposeOfVisit}</td>
-
                   <td>{formatDate(visitor.timeIn)}</td>
-
                   <td>{formatDate(visitor.timeOut)}</td>
 
                   <td>
@@ -330,6 +320,13 @@ function AdminDashboard() {
                     {visitor.status === "Checked Out" && <span>Completed</span>}
 
                     {visitor.status === "Cancelled" && <span>Cancelled</span>}
+
+                    <button
+                      className="print-badge-button"
+                      onClick={() => setSelectedVisitor(visitor)}
+                    >
+                      Print Badge
+                    </button>
                   </td>
                 </tr>
               ))
@@ -341,6 +338,13 @@ function AdminDashboard() {
       <footer className="dashboard-footer">
         Showing {filteredVisitors.length} of {totalVisitors} visitors
       </footer>
+
+      {selectedVisitor && (
+        <VisitorBadge
+          visitor={selectedVisitor}
+          onClose={() => setSelectedVisitor(null)}
+        />
+      )}
     </div>
   );
 }

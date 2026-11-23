@@ -1,43 +1,62 @@
+/* =========================================
+   PREMIUM VISITOR SECURITY BADGE
+========================================= */
+
 .badge-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
+  background: rgba(8, 20, 36, 0.78);
+  backdrop-filter: blur(7px);
 }
 
 .badge-modal {
   width: 100%;
-  max-width: 520px;
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
+  max-width: 560px;
+  padding: 25px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
 }
 
 .badge-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .badge-actions button {
+  padding: 12px 20px;
   border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
-  cursor: pointer;
-  background: #17365d;
+  border-radius: 9px;
+  background: #173b63;
   color: white;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.badge-actions button:first-child:hover {
+  background: #2563eb;
 }
 
 .badge-actions button:last-child {
-  background: #666;
+  background: #e2e8f0;
+  color: #334155;
 }
+
+.badge-actions button:last-child:hover {
+  background: #cbd5e1;
+}
+
+/* BADGE */
 
 .visitor-badge-print-area {
   display: flex;
@@ -45,129 +64,241 @@
 }
 
 .visitor-badge {
-  width: 340px;
-  min-height: 480px;
-  border: 3px solid #17365d;
-  border-radius: 14px;
+  position: relative;
+  width: 360px;
+  min-height: 510px;
   overflow: hidden;
-  background: white;
-  color: #172b4d;
+  border-radius: 19px;
+  border: 1px solid #d5e0eb;
+  background: #ffffff;
+  color: #172b45;
+  font-family: Inter, Arial, sans-serif;
   text-align: center;
-  font-family: Arial, sans-serif;
+  box-shadow: 0 15px 35px rgba(16, 36, 58, 0.15);
 }
 
+/* TOP HEADER */
+
 .badge-header {
-  background: #17365d;
+  position: relative;
+  padding: 28px 15px 24px;
+  background: linear-gradient(135deg, #10243a, #245582);
   color: white;
-  padding: 22px 12px;
+}
+
+.badge-header::after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  height: 24px;
+  background: white;
+  transform: skewY(-3deg);
 }
 
 .badge-header h2 {
-  font-size: 30px;
   margin: 0;
-  letter-spacing: 3px;
+  font-size: 28px;
+  font-weight: 850;
+  letter-spacing: 4px;
 }
 
 .badge-header p {
-  font-size: 10px;
+  margin: 9px 0 0;
+  color: #cbdced;
+  font-size: 9px;
+  font-weight: 650;
   letter-spacing: 2px;
-  margin: 8px 0 0;
 }
+
+/* BADGE NUMBER */
 
 .badge-number {
-  margin: 22px 15px;
-  padding: 14px 5px;
-  border: 2px dashed #17365d;
-  border-radius: 8px;
-  font-size: 27px;
-  font-weight: 800;
-  color: #17365d;
+  position: relative;
+  z-index: 1;
+  margin: 23px 23px 19px;
+  padding: 16px 8px;
+  border: 2px dashed #a7c5e8;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #174477;
+  font-size: 29px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
 }
 
+/* VISITOR INFORMATION */
+
 .badge-visitor-info {
-  padding: 5px 15px 18px;
+  padding: 8px 18px 19px;
 }
 
 .badge-visitor-info h1 {
+  margin: 0;
+  color: #10243a;
   font-size: 25px;
-  margin: 0 0 8px;
+  font-weight: 850;
   overflow-wrap: anywhere;
 }
 
 .badge-visitor-info p {
-  color: #555;
-  margin: 0;
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
 }
 
+/* VISIT DETAILS */
+
 .badge-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+  margin: 0 23px;
+  padding: 5px 0;
   text-align: left;
-  padding: 0 22px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .badge-details div {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
+  gap: 6px;
+  min-width: 0;
+  padding: 13px 0;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .badge-details span {
-  font-size: 10px;
-  color: #777;
+  color: #8493a5;
+  font-size: 9px;
+  font-weight: 800;
   letter-spacing: 1px;
 }
 
 .badge-details strong {
-  font-size: 14px;
+  color: #1e344d;
+  font-size: 12px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
 }
+
+/* BOTTOM SECTION */
 
 .badge-footer {
   margin-top: 18px;
-  background: #17365d;
+  padding: 18px 12px;
+  background: #10243a;
   color: white;
-  padding: 15px 8px;
 }
 
 .badge-footer p {
-  font-size: 10px;
-  margin: 0 0 7px;
-}
-
-.badge-footer strong {
-  font-size: 13px;
+  margin: 0 0 8px;
+  color: #cbd9e8;
+  font-size: 9px;
+  font-weight: 650;
   letter-spacing: 1px;
 }
 
+.badge-footer strong {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+/* SMALL SCREEN PREVIEW */
+
+@media (max-width: 480px) {
+  .badge-overlay {
+    padding: 10px;
+  }
+
+  .badge-modal {
+    padding: 14px;
+  }
+
+  .visitor-badge {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .badge-actions {
+    justify-content: center;
+  }
+}
+
+/* PRINT SETTINGS */
+
 @media print {
   @page {
-    size: portrait;
-    margin: 10mm;
+    size: 4in 6in;
+    margin: 0;
+  }
+
+  html,
+  body,
+  #root {
+    width: 4in !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
   }
 
   body * {
     visibility: hidden !important;
   }
 
+  .badge-overlay,
+  .badge-modal,
   .visitor-badge-print-area,
   .visitor-badge-print-area * {
     visibility: visible !important;
   }
 
-  .visitor-badge-print-area {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    justify-content: center;
+  .badge-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+    width: 4in !important;
+    height: 6in !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: white !important;
+    backdrop-filter: none !important;
   }
 
-  .visitor-badge {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+  .badge-modal {
+    width: 4in !important;
+    max-width: none !important;
+    height: 6in !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
   }
 
   .badge-actions {
     display: none !important;
+  }
+
+  .visitor-badge-print-area {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+    width: 4in !important;
+  }
+
+  .visitor-badge .badge-number {
+    width: 3.7in !important;
+    min-height: 5.4in !important;
+    margin: 0.2in auto !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 }

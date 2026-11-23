@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import VisitorBadge from "../components/VisitorBadge";
+import DashboardSidebar from "../components/DashboardSidebar";
 import "./AdminDashboard.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
@@ -12,6 +13,7 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [selectedVisitor, setSelectedVisitor] = useState(null);
 
+  // Fetch visitors
   const fetchVisitors = async () => {
     try {
       setLoading(true);
@@ -174,177 +176,195 @@ function AdminDashboard() {
   ).length;
 
   return (
-    <div className="admin-dashboard">
-      <header className="dashboard-header">
-        <div>
-          <h1>Visitor Management Dashboard</h1>
-          <p>Manage visitor registration, escorts, and checkouts.</p>
-        </div>
+    <div className="admin-layout">
+      <DashboardSidebar />
 
-        <button
-          className="refresh-button"
-          onClick={fetchVisitors}
-          disabled={loading}
-        >
-          {loading ? "Loading..." : "Refresh"}
-        </button>
-      </header>
+      <main className="admin-main">
+        <div className="admin-dashboard">
+          {/* Dashboard Header */}
+          <header className="dashboard-header">
+            <div>
+              <h1>Visitor Management Dashboard</h1>
+              <p>Manage visitor registration, escorts, and checkouts.</p>
+            </div>
 
-      <section className="dashboard-stats">
-        <div className="stat-card">
-          <h3>Total Visitors</h3>
-          <p>{totalVisitors}</p>
-        </div>
+            <button
+              className="refresh-button"
+              onClick={fetchVisitors}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "Refresh"}
+            </button>
+          </header>
 
-        <div className="stat-card">
-          <h3>Registered</h3>
-          <p>{registeredVisitors}</p>
-        </div>
+          {/* Dashboard Statistics */}
+          <section className="dashboard-stats">
+            <div className="stat-card">
+              <h3>Total Visitors</h3>
+              <p>{totalVisitors}</p>
+            </div>
 
-        <div className="stat-card">
-          <h3>Waiting for Department</h3>
-          <p>{waitingVisitors}</p>
-        </div>
+            <div className="stat-card">
+              <h3>Registered</h3>
+              <p>{registeredVisitors}</p>
+            </div>
 
-        <div className="stat-card">
-          <h3>Checked Out</h3>
-          <p>{checkedOutVisitors}</p>
-        </div>
-      </section>
+            <div className="stat-card">
+              <h3>Waiting for Department</h3>
+              <p>{waitingVisitors}</p>
+            </div>
 
-      <section className="dashboard-controls">
-        <input
-          type="text"
-          placeholder="Search name, company, department, or badge..."
-          value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
-        />
+            <div className="stat-card">
+              <h3>Checked Out</h3>
+              <p>{checkedOutVisitors}</p>
+            </div>
+          </section>
 
-        <select
-          value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value)}
-        >
-          <option value="All">All Statuses</option>
-          <option value="Registered">Registered</option>
-          <option value="Waiting for Department">Waiting for Department</option>
-          <option value="Escort Requested">Escort Requested</option>
-          <option value="Escort Accepted">Escort Accepted</option>
-          <option value="Escort in Progress">Escort in Progress</option>
-          <option value="Checked Out">Checked Out</option>
-          <option value="Cancelled">Cancelled</option>
-        </select>
-      </section>
+          {/* Search and Filter */}
+          <section className="dashboard-controls">
+            <input
+              type="text"
+              placeholder="Search name, company, department, or badge..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
 
-      {error && <p className="error-message">{error}</p>}
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Registered">Registered</option>
+              <option value="Waiting for Department">
+                Waiting for Department
+              </option>
+              <option value="Escort Requested">Escort Requested</option>
+              <option value="Escort Accepted">Escort Accepted</option>
+              <option value="Escort in Progress">Escort in Progress</option>
+              <option value="Checked Out">Checked Out</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </section>
 
-      <section className="table-wrapper">
-        <table className="visitor-table">
-          <thead>
-            <tr>
-              <th>Visitor Name</th>
-              <th>Badge Number</th>
-              <th>Company</th>
-              <th>Person to Visit</th>
-              <th>Department</th>
-              <th>Purpose</th>
-              <th>Time In</th>
-              <th>Time Out</th>
-              <th>Status</th>
-              <th>Escort</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          {error && <p className="error-message">{error}</p>}
 
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="11">Loading visitors...</td>
-              </tr>
-            ) : filteredVisitors.length === 0 ? (
-              <tr>
-                <td colSpan="11">No visitors found.</td>
-              </tr>
-            ) : (
-              filteredVisitors.map((visitor) => (
-                <tr key={visitor._id}>
-                  <td>{visitor.fullName}</td>
-
-                  <td className="badge-number">
-                    {visitor.badgeNumber || "Not assigned"}
-                  </td>
-
-                  <td>{visitor.company || "—"}</td>
-                  <td>{visitor.personToVisit}</td>
-                  <td>{visitor.department}</td>
-                  <td>{visitor.purposeOfVisit}</td>
-                  <td>{formatDate(visitor.timeIn)}</td>
-                  <td>{formatDate(visitor.timeOut)}</td>
-
-                  <td>
-                    <span
-                      className={`status-badge ${visitor.status
-                        ?.toLowerCase()
-                        .replaceAll(" ", "-")}`}
-                    >
-                      {visitor.status}
-                    </span>
-                  </td>
-
-                  <td>{visitor.escortName || "Not assigned"}</td>
-
-                  <td className="action-buttons">
-                    {visitor.status === "Registered" && (
-                      <button onClick={() => requestEscort(visitor._id)}>
-                        Request Escort
-                      </button>
-                    )}
-
-                    {visitor.status === "Escort Requested" && (
-                      <button onClick={() => assignEscort(visitor._id)}>
-                        Assign Escort
-                      </button>
-                    )}
-
-                    {visitor.status === "Escort Accepted" && (
-                      <button onClick={() => startEscort(visitor._id)}>
-                        Start Escort
-                      </button>
-                    )}
-
-                    {visitor.status === "Escort in Progress" && (
-                      <button onClick={() => checkoutVisitor(visitor._id)}>
-                        Check Out
-                      </button>
-                    )}
-
-                    {visitor.status === "Checked Out" && <span>Completed</span>}
-
-                    {visitor.status === "Cancelled" && <span>Cancelled</span>}
-
-                    <button
-                      className="print-badge-button"
-                      onClick={() => setSelectedVisitor(visitor)}
-                    >
-                      Print Badge
-                    </button>
-                  </td>
+          {/* Visitors Table */}
+          <section className="table-wrapper">
+            <table className="visitor-table">
+              <thead>
+                <tr>
+                  <th>Visitor Name</th>
+                  <th>Badge Number</th>
+                  <th>Company</th>
+                  <th>Person to Visit</th>
+                  <th>Department</th>
+                  <th>Purpose</th>
+                  <th>Time In</th>
+                  <th>Time Out</th>
+                  <th>Status</th>
+                  <th>Escort</th>
+                  <th>Actions</th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </section>
+              </thead>
 
-      <footer className="dashboard-footer">
-        Showing {filteredVisitors.length} of {totalVisitors} visitors
-      </footer>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="11">Loading visitors...</td>
+                  </tr>
+                ) : filteredVisitors.length === 0 ? (
+                  <tr>
+                    <td colSpan="11">No visitors found.</td>
+                  </tr>
+                ) : (
+                  filteredVisitors.map((visitor) => (
+                    <tr key={visitor._id}>
+                      <td>{visitor.fullName}</td>
 
-      {selectedVisitor && (
-        <VisitorBadge
-          visitor={selectedVisitor}
-          onClose={() => setSelectedVisitor(null)}
-        />
-      )}
+                      <td className="badge-number">
+                        {visitor.badgeNumber || "Not assigned"}
+                      </td>
+
+                      <td>{visitor.company || "—"}</td>
+                      <td>{visitor.personToVisit}</td>
+                      <td>{visitor.department}</td>
+                      <td>{visitor.purposeOfVisit}</td>
+                      <td>{formatDate(visitor.timeIn)}</td>
+                      <td>{formatDate(visitor.timeOut)}</td>
+
+                      <td>
+                        <span
+                          className={`status-badge ${visitor.status
+                            ?.toLowerCase()
+                            .replaceAll(" ", "-")}`}
+                        >
+                          {visitor.status}
+                        </span>
+                      </td>
+
+                      <td>{visitor.escortName || "Not assigned"}</td>
+
+                      <td className="action-buttons">
+                        {visitor.status === "Registered" && (
+                          <button onClick={() => requestEscort(visitor._id)}>
+                            Request Escort
+                          </button>
+                        )}
+
+                        {visitor.status === "Escort Requested" && (
+                          <button onClick={() => assignEscort(visitor._id)}>
+                            Assign Escort
+                          </button>
+                        )}
+
+                        {visitor.status === "Escort Accepted" && (
+                          <button onClick={() => startEscort(visitor._id)}>
+                            Start Escort
+                          </button>
+                        )}
+
+                        {visitor.status === "Escort in Progress" && (
+                          <button onClick={() => checkoutVisitor(visitor._id)}>
+                            Check Out
+                          </button>
+                        )}
+
+                        {visitor.status === "Checked Out" && (
+                          <span>Completed</span>
+                        )}
+
+                        {visitor.status === "Cancelled" && (
+                          <span>Cancelled</span>
+                        )}
+
+                        <button
+                          className="print-badge-button"
+                          onClick={() => setSelectedVisitor(visitor)}
+                        >
+                          Print Badge
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </section>
+
+          {/* Dashboard Footer */}
+          <footer className="dashboard-footer">
+            Showing {filteredVisitors.length} of {totalVisitors} visitors
+          </footer>
+
+          {/* Print Badge Modal */}
+          {selectedVisitor && (
+            <VisitorBadge
+              visitor={selectedVisitor}
+              onClose={() => setSelectedVisitor(null)}
+            />
+          )}
+        </div>
+      </main>
     </div>
   );
 }

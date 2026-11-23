@@ -178,6 +178,8 @@ function VisitorRegistration() {
                 </option>
                 <option value="Administration">Administration</option>
                 <option value="Legal">Legal</option>
+                <option value="Facility">Facility</option>
+                <option value="Interview">Interview</option>
                 <option value="Other">Other</option>
               </select>
             </div>

@@ -5,29 +5,38 @@ const API_URL = "http://localhost:5000/api/visitors";
 
 function AdminDashboard() {
   const [visitors, setVisitors] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
 
+  // Fetch all visitors
   const fetchVisitors = async () => {
     try {
+      setLoading(true);
       setError("");
+
       const response = await fetch(API_URL);
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to load visitors");
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to load visitors.");
       }
 
       setVisitors(data.visitors || []);
-    } catch (err) {
-      setError(err.message || "Unable to connect to the server.");
+    } catch (error) {
+      console.error("Fetch visitors error:", error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchVisitors();
+  }, []);
+
+  // Request escort
   const requestEscort = async (visitorId) => {
     try {
       const response = await fetch(`${API_URL}/${visitorId}/escort-request`, {
@@ -37,17 +46,18 @@ function AdminDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Could not request escort.");
       }
 
       await fetchVisitors();
     } catch (error) {
-      setError(error.message);
+      alert(error.message);
     }
   };
 
+  // Assign escort
   const assignEscort = async (visitorId) => {
-    const escortName = window.prompt("Enter employee name:");
+    const escortName = prompt("Enter the escort employee's name:");
 
     if (!escortName || !escortName.trim()) return;
 
@@ -57,21 +67,24 @@ function AdminDashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ escortName }),
+        body: JSON.stringify({
+          escortName: escortName.trim(),
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Could not assign escort.");
       }
 
       await fetchVisitors();
     } catch (error) {
-      setError(error.message);
+      alert(error.message);
     }
   };
 
+  // Start escort
   const startEscort = async (visitorId) => {
     try {
       const response = await fetch(`${API_URL}/${visitorId}/status`, {
@@ -87,17 +100,22 @@ function AdminDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Could not start escort.");
       }
 
       await fetchVisitors();
     } catch (error) {
-      setError(error.message);
+      alert(error.message);
     }
   };
 
+  // Check out visitor
   const checkoutVisitor = async (visitorId) => {
-    if (!window.confirm("Confirm visitor checkout?")) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to check out this visitor?",
+    );
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`${API_URL}/${visitorId}/checkout`, {
@@ -107,27 +125,32 @@ function AdminDashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message);
+        throw new Error(data.message || "Unable to check out visitor.");
       }
 
       await fetchVisitors();
     } catch (error) {
-      setError(error.message);
+      alert(error.message);
     }
   };
 
-  useEffect(() => {
-    fetchVisitors();
-  }, []);
+  // Format date and time
+  const formatDate = (date) => {
+    if (!date) return "—";
 
+    return new Date(date).toLocaleString();
+  };
+
+  // Filter visitors
   const filteredVisitors = visitors.filter((visitor) => {
-    const searchText = search.toLowerCase();
+    const search = searchTerm.toLowerCase();
 
     const matchesSearch =
-      visitor.fullName?.toLowerCase().includes(searchText) ||
-      visitor.company?.toLowerCase().includes(searchText) ||
-      visitor.personToVisit?.toLowerCase().includes(searchText) ||
-      visitor.department?.toLowerCase().includes(searchText);
+      visitor.fullName?.toLowerCase().includes(search) ||
+      visitor.company?.toLowerCase().includes(search) ||
+      visitor.personToVisit?.toLowerCase().includes(search) ||
+      visitor.department?.toLowerCase().includes(search) ||
+      visitor.badgeNumber?.toLowerCase().includes(search);
 
     const matchesStatus =
       statusFilter === "All" || visitor.status === statusFilter;
@@ -135,169 +158,190 @@ function AdminDashboard() {
     return matchesSearch && matchesStatus;
   });
 
-  const formatDate = (date) => {
-    if (!date) return "—";
+  // Dashboard statistics
+  const totalVisitors = visitors.length;
 
-    return new Date(date).toLocaleString();
-  };
+  const registeredVisitors = visitors.filter(
+    (visitor) => visitor.status === "Registered",
+  ).length;
+
+  const waitingVisitors = visitors.filter(
+    (visitor) => visitor.status === "Waiting for Department",
+  ).length;
+
+  const checkedOutVisitors = visitors.filter(
+    (visitor) => visitor.status === "Checked Out",
+  ).length;
 
   return (
-    <main className="admin-dashboard">
-      <header className="admin-header">
+    <div className="admin-dashboard">
+      {/* Dashboard Header */}
+      <header className="dashboard-header">
         <div>
-          <h1>Security Admin Dashboard</h1>
-          <p>Visitor Registration and Escort Management</p>
+          <h1>Visitor Management Dashboard</h1>
+          <p>Manage visitor registration, escorts, and checkouts.</p>
         </div>
 
-        <button onClick={fetchVisitors} className="refresh-button">
-          ↻ Refresh Visitors
+        <button
+          className="refresh-button"
+          onClick={fetchVisitors}
+          disabled={loading}
+        >
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </header>
 
+      {/* Statistics */}
       <section className="dashboard-stats">
         <div className="stat-card">
           <h3>Total Visitors</h3>
-          <p>{visitors.length}</p>
+          <p>{totalVisitors}</p>
         </div>
 
         <div className="stat-card">
           <h3>Registered</h3>
-          <p>{visitors.filter((v) => v.status === "Registered").length}</p>
+          <p>{registeredVisitors}</p>
         </div>
 
         <div className="stat-card">
           <h3>Waiting for Department</h3>
-          <p>
-            {
-              visitors.filter((v) => v.status === "Waiting for Department")
-                .length
-            }
-          </p>
+          <p>{waitingVisitors}</p>
         </div>
 
         <div className="stat-card">
           <h3>Checked Out</h3>
-          <p>{visitors.filter((v) => v.status === "Checked Out").length}</p>
+          <p>{checkedOutVisitors}</p>
         </div>
       </section>
 
-      <section className="visitor-section">
-        <div className="section-heading">
-          <div>
-            <h2>Visitor Records</h2>
-            <p>View and monitor registered visitors.</p>
-          </div>
-        </div>
+      {/* Search and Filter */}
+      <section className="dashboard-controls">
+        <input
+          type="text"
+          placeholder="Search name, company, department, or badge..."
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+        />
 
-        <div className="visitor-controls">
-          <input
-            type="search"
-            placeholder="Search by name, company, or department..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <select
+          value={statusFilter}
+          onChange={(event) => setStatusFilter(event.target.value)}
+        >
+          <option value="All">All Statuses</option>
+          <option value="Registered">Registered</option>
+          <option value="Waiting for Department">Waiting for Department</option>
+          <option value="Escort Requested">Escort Requested</option>
+          <option value="Escort Accepted">Escort Accepted</option>
+          <option value="Escort in Progress">Escort in Progress</option>
+          <option value="Checked Out">Checked Out</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </section>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="All">All Statuses</option>
-            <option value="Registered">Registered</option>
-            <option value="Waiting for Department">
-              Waiting for Department
-            </option>
-            <option value="Escort Requested">Escort Requested</option>
-            <option value="Escort Accepted">Escort Accepted</option>
-            <option value="Escort in Progress">Escort in Progress</option>
-            <option value="Checked Out">Checked Out</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
+      {/* Error Message */}
+      {error && <p className="error-message">{error}</p>}
 
-        {error && <p className="dashboard-error">{error}</p>}
+      {/* Visitor Table */}
+      <section className="table-wrapper">
+        <table className="visitor-table">
+          <thead>
+            <tr>
+              <th>Visitor Name</th>
+              <th>Badge Number</th>
+              <th>Company</th>
+              <th>Person to Visit</th>
+              <th>Department</th>
+              <th>Purpose</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Status</th>
+              <th>Escort</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
 
-        {loading ? (
-          <p className="dashboard-message">Loading visitors...</p>
-        ) : filteredVisitors.length === 0 ? (
-          <p className="dashboard-message">No visitors found.</p>
-        ) : (
-          <div className="table-wrapper">
-            <table className="visitor-table">
-              <thead>
-                <tr>
-                  <th>Visitor Name</th>
-                  <th>Company</th>
-                  <th>Person to Visit</th>
-                  <th>Department</th>
-                  <th>Purpose</th>
-                  <th>Time In</th>
-                  <th>Status</th>
-                  <th>Escort</th>
-                  <th>Actions</th>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="11">Loading visitors...</td>
+              </tr>
+            ) : filteredVisitors.length === 0 ? (
+              <tr>
+                <td colSpan="11">No visitors found.</td>
+              </tr>
+            ) : (
+              filteredVisitors.map((visitor) => (
+                <tr key={visitor._id}>
+                  <td>{visitor.fullName}</td>
+
+                  <td className="badge-number">
+                    {visitor.badgeNumber || "Not assigned"}
+                  </td>
+
+                  <td>{visitor.company || "—"}</td>
+
+                  <td>{visitor.personToVisit}</td>
+
+                  <td>{visitor.department}</td>
+
+                  <td>{visitor.purposeOfVisit}</td>
+
+                  <td>{formatDate(visitor.timeIn)}</td>
+
+                  <td>{formatDate(visitor.timeOut)}</td>
+
+                  <td>
+                    <span
+                      className={`status-badge ${visitor.status
+                        ?.toLowerCase()
+                        .replaceAll(" ", "-")}`}
+                    >
+                      {visitor.status}
+                    </span>
+                  </td>
+
+                  <td>{visitor.escortName || "Not assigned"}</td>
+
+                  <td className="action-buttons">
+                    {visitor.status === "Registered" && (
+                      <button onClick={() => requestEscort(visitor._id)}>
+                        Request Escort
+                      </button>
+                    )}
+
+                    {visitor.status === "Escort Requested" && (
+                      <button onClick={() => assignEscort(visitor._id)}>
+                        Assign Escort
+                      </button>
+                    )}
+
+                    {visitor.status === "Escort Accepted" && (
+                      <button onClick={() => startEscort(visitor._id)}>
+                        Start Escort
+                      </button>
+                    )}
+
+                    {visitor.status === "Escort in Progress" && (
+                      <button onClick={() => checkoutVisitor(visitor._id)}>
+                        Check Out
+                      </button>
+                    )}
+
+                    {visitor.status === "Checked Out" && <span>Completed</span>}
+
+                    {visitor.status === "Cancelled" && <span>Cancelled</span>}
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {filteredVisitors.map((visitor) => (
-                  <tr key={visitor._id}>
-                    <td>{visitor.fullName}</td>
-                    <td>{visitor.company || "—"}</td>
-                    <td>{visitor.personToVisit}</td>
-                    <td>{visitor.department}</td>
-                    <td>{visitor.purposeOfVisit}</td>
-                    <td>{formatDate(visitor.timeIn)}</td>
-                    <td>
-                      <span
-                        className={`status-badge ${visitor.status
-                          ?.toLowerCase()
-                          .replaceAll(" ", "-")}`}
-                      >
-                        {visitor.status}
-                      </span>
-                    </td>
-
-                    <td>{visitor.escortName || "Not assigned"}</td>
-
-                    <td>{/* Escort action buttons will go here */}</td>
-                    <td>
-                      {visitor.status === "Registered" && (
-                        <button onClick={() => requestEscort(visitor._id)}>
-                          Request Escort
-                        </button>
-                      )}
-
-                      {visitor.status === "Escort Requested" && (
-                        <button onClick={() => assignEscort(visitor._id)}>
-                          Assign Escort
-                        </button>
-                      )}
-
-                      {visitor.status === "Escort Accepted" && (
-                        <button onClick={() => startEscort(visitor._id)}>
-                          Start Escort
-                        </button>
-                      )}
-
-                      {visitor.status === "Escort in Progress" && (
-                        <button onClick={() => checkoutVisitor(visitor._id)}>
-                          Check Out
-                        </button>
-                      )}
-
-                      {visitor.status === "Checked Out" && "Completed"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        <p className="record-count">
-          Showing {filteredVisitors.length} of {visitors.length} visitors
-        </p>
+              ))
+            )}
+          </tbody>
+        </table>
       </section>
-    </main>
+
+      <footer className="dashboard-footer">
+        Showing {filteredVisitors.length} of {totalVisitors} visitors
+      </footer>
+    </div>
   );
 }
 

@@ -272,7 +272,8 @@ function VisitorRegistration() {
       </section>
 
       <footer className="page-footer">
-        Visitor Management System | Security Services
+        Visitor Management System | Security Services &copy; Masihullah Omer
+        2026
       </footer>
     </main>
   );

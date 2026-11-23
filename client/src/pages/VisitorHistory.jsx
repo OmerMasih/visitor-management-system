@@ -1,0 +1,204 @@
+import { useEffect, useState } from "react";
+import DashboardSidebar from "../components/DashboardSidebar";
+import "./VisitorHistory.css";
+
+const API_URL = "http://localhost:5000/api/visitors";
+
+function VisitorHistory() {
+  const [visitors, setVisitors] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const fetchVisitors = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(API_URL);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to load visitor history.");
+      }
+
+      setVisitors(data.visitors || []);
+    } catch (error) {
+      console.error("Visitor history error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVisitors();
+  }, []);
+
+  const formatDate = (date) => {
+    if (!date) return "—";
+    return new Date(date).toLocaleString();
+  };
+
+  const filteredVisitors = visitors.filter((visitor) => {
+    const search = searchTerm.toLowerCase();
+
+    const matchesSearch =
+      visitor.fullName?.toLowerCase().includes(search) ||
+      visitor.badgeNumber?.toLowerCase().includes(search) ||
+      visitor.company?.toLowerCase().includes(search) ||
+      visitor.personToVisit?.toLowerCase().includes(search);
+
+    const matchesStatus =
+      statusFilter === "All" || visitor.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  return (
+    <div className="admin-layout">
+      <DashboardSidebar />
+
+      <main className="admin-main">
+        <div className="visitor-history-page">
+          <header className="history-header">
+            <div>
+              <p className="history-label">RECORDS MANAGEMENT</p>
+              <h1>Visitor History</h1>
+              <p>
+                Review visitor registrations, arrival times, departures, and
+                escort assignments.
+              </p>
+            </div>
+
+            <button
+              className="history-refresh-button"
+              onClick={fetchVisitors}
+              disabled={loading}
+            >
+              {loading ? "Loading..." : "↻ Refresh"}
+            </button>
+          </header>
+
+          <section className="history-summary">
+            <div className="history-stat-card">
+              <span>Total Records</span>
+              <strong>{visitors.length}</strong>
+            </div>
+
+            <div className="history-stat-card">
+              <span>Checked Out</span>
+              <strong>
+                {
+                  visitors.filter((visitor) => visitor.status === "Checked Out")
+                    .length
+                }
+              </strong>
+            </div>
+
+            <div className="history-stat-card">
+              <span>Currently Active</span>
+              <strong>
+                {
+                  visitors.filter(
+                    (visitor) =>
+                      visitor.status !== "Checked Out" &&
+                      visitor.status !== "Cancelled",
+                  ).length
+                }
+              </strong>
+            </div>
+          </section>
+
+          <section className="history-controls">
+            <input
+              type="text"
+              placeholder="Search visitor, badge, company..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            >
+              <option value="All">All Statuses</option>
+              <option value="Registered">Registered</option>
+              <option value="Waiting for Department">
+                Waiting for Department
+              </option>
+              <option value="Escort Requested">Escort Requested</option>
+              <option value="Escort Accepted">Escort Accepted</option>
+              <option value="Escort in Progress">Escort in Progress</option>
+              <option value="Checked Out">Checked Out</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </section>
+
+          {error && <p className="history-error">{error}</p>}
+
+          <section className="history-table-wrapper">
+            <table className="history-table">
+              <thead>
+                <tr>
+                  <th>Visitor Name</th>
+                  <th>Badge Number</th>
+                  <th>Company</th>
+                  <th>Person to Visit</th>
+                  <th>Department</th>
+                  <th>Purpose</th>
+                  <th>Time In</th>
+                  <th>Time Out</th>
+                  <th>Status</th>
+                  <th>Escort</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan="10">Loading visitor records...</td>
+                  </tr>
+                ) : filteredVisitors.length === 0 ? (
+                  <tr>
+                    <td colSpan="10">No visitor records found.</td>
+                  </tr>
+                ) : (
+                  filteredVisitors.map((visitor) => (
+                    <tr key={visitor._id}>
+                      <td>{visitor.fullName}</td>
+                      <td>{visitor.badgeNumber || "Not assigned"}</td>
+                      <td>{visitor.company || "—"}</td>
+                      <td>{visitor.personToVisit}</td>
+                      <td>{visitor.department}</td>
+                      <td>{visitor.purposeOfVisit}</td>
+                      <td>{formatDate(visitor.timeIn)}</td>
+                      <td>{formatDate(visitor.timeOut)}</td>
+                      <td>
+                        <span
+                          className={`history-status ${visitor.status
+                            ?.toLowerCase()
+                            .replaceAll(" ", "-")}`}
+                        >
+                          {visitor.status}
+                        </span>
+                      </td>
+                      <td>{visitor.escortName || "Not assigned"}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </section>
+
+          <footer className="history-footer">
+            Showing {filteredVisitors.length} of {visitors.length} records
+          </footer>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default VisitorHistory;

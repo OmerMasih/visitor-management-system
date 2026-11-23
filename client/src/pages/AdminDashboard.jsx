@@ -182,19 +182,35 @@ function AdminDashboard() {
       <main className="admin-main">
         <div className="admin-dashboard">
           {/* Dashboard Header */}
+
           <header className="dashboard-header">
-            <div>
-              <h1>Visitor Management Dashboard</h1>
-              <p>Manage visitor registration, escorts, and checkouts.</p>
+            <div className="dashboard-welcome">
+              <p className="welcome-label">ADMINISTRATION PORTAL</p>
+              <h1>Welcome to Visitor Management</h1>
+              <p>Monitor visitors, manage escorts, and track daily activity.</p>
             </div>
 
-            <button
-              className="refresh-button"
-              onClick={fetchVisitors}
-              disabled={loading}
-            >
-              {loading ? "Loading..." : "Refresh"}
-            </button>
+            <div className="dashboard-header-actions">
+              <div className="current-date">
+                <span>Today's Date</span>
+                <strong>
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </strong>
+              </div>
+
+              <button
+                className="refresh-button"
+                onClick={fetchVisitors}
+                disabled={loading}
+              >
+                {loading ? "Loading..." : "↻ Refresh"}
+              </button>
+            </div>
           </header>
 
           {/* Dashboard Statistics */}

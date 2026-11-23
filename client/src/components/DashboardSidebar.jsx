@@ -12,22 +12,22 @@ function DashboardSidebar() {
       <nav className="sidebar-navigation">
         <p className="sidebar-label">MAIN MENU</p>
 
-        <NavLink to="/admin" className="sidebar-link">
+        <NavLink to="/admin" end className="sidebar-link">
           <span>▦</span>
           Dashboard
         </NavLink>
 
-        <NavLink to="/" className="sidebar-link">
+        <NavLink to="/" end className="sidebar-link">
           <span>＋</span>
           Visitor Registration
         </NavLink>
 
-        <p className="sidebar-label">COMING SOON</p>
-
-        <div className="sidebar-disabled">
+        <NavLink to="/admin/history" className="sidebar-link">
           <span>◷</span>
           Visitor History
-        </div>
+        </NavLink>
+
+        <p className="sidebar-label">COMING SOON</p>
 
         <div className="sidebar-disabled">
           <span>▤</span>

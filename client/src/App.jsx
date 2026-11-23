@@ -2,18 +2,18 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import VisitorRegistration from "./pages/VisitorRegistration";
 import AdminDashboard from "./pages/AdminDashboard";
+import VisitorHistory from "./pages/VisitorHistory";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Visitor registration page */}
         <Route path="/" element={<VisitorRegistration />} />
 
-        {/* Security admin dashboard */}
         <Route path="/admin" element={<AdminDashboard />} />
 
-        {/* Redirect unknown pages */}
+        <Route path="/admin/history" element={<VisitorHistory />} />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

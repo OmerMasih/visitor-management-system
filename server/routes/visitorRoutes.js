@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import Visitor from "../models/Visitor.js";
 import Counter from "../models/Counter.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -85,6 +86,32 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Protect all administrator routes below this point
+router.use(authMiddleware);
+
+// ==========================================
+// GET: Retrieve all visitors
+// ==========================================
+router.get("/", async (req, res) => {
+  try {
+    const visitors = await Visitor.find().sort({
+      createdAt: -1,
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: visitors.length,
+      visitors,
+    });
+  } catch (error) {
+    console.error("Retrieve visitors error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve visitors.",
+    });
+  }
+});
 // ==========================================
 // GET: Retrieve all visitors
 // ==========================================

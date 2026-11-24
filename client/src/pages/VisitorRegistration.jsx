@@ -14,6 +14,7 @@ function VisitorRegistration() {
     escortPolicyAccepted: false,
   });
 
+  const [otherDepartment, setOtherDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
@@ -25,17 +26,34 @@ function VisitorRegistration() {
       ...previous,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    if (name === "department" && value !== "Other") {
+      setOtherDepartment("");
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (formData.department === "Other" && !otherDepartment.trim()) {
+      setError("Please enter the department name.");
+      return;
+    }
 
     setLoading(true);
     setError("");
     setSuccess(null);
 
     try {
-      const result = await registerVisitor(formData);
+      const registrationData = {
+        ...formData,
+        department:
+          formData.department === "Other"
+            ? otherDepartment.trim()
+            : formData.department,
+      };
+
+      const result = await registerVisitor(registrationData);
 
       setSuccess(result.visitor);
 
@@ -49,6 +67,8 @@ function VisitorRegistration() {
         confidentialityAccepted: false,
         escortPolicyAccepted: false,
       });
+
+      setOtherDepartment("");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -183,6 +203,22 @@ function VisitorRegistration() {
                 <option value="Other">Other</option>
               </select>
             </div>
+
+            {formData.department === "Other" && (
+              <div className="form-group">
+                <label htmlFor="otherDepartment">
+                  Please Specify Department *
+                </label>
+                <input
+                  id="otherDepartment"
+                  name="otherDepartment"
+                  value={otherDepartment}
+                  onChange={(event) => setOtherDepartment(event.target.value)}
+                  placeholder="Enter department name"
+                  required
+                />
+              </div>
+            )}
 
             <div className="form-group full-width">
               <label htmlFor="purposeOfVisit">Purpose of Visit *</label>

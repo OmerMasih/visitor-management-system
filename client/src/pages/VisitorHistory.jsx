@@ -37,6 +37,35 @@ function VisitorHistory() {
     fetchVisitors();
   }, []);
 
+  // Restore visitor to Dashboard
+  const restoreVisitor = async (visitorId, visitorName) => {
+    const confirmed = window.confirm(
+      `Restore ${visitorName} to the Dashboard?`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `${API_URL}/${visitorId}/restore-to-dashboard`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to restore visitor.");
+      }
+
+      await fetchVisitors();
+      alert("Visitor successfully restored to Dashboard.");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   // Permanently delete visitor
   const deleteVisitor = async (visitorId, visitorName) => {
     const confirmed = window.confirm(
@@ -57,7 +86,6 @@ function VisitorHistory() {
       }
 
       await fetchVisitors();
-
       alert("Visitor record permanently deleted.");
     } catch (error) {
       alert(error.message);
@@ -94,7 +122,6 @@ function VisitorHistory() {
       <main className="admin-main">
         <div className="visitor-history-page">
           {/* Header */}
-
           <header className="history-header">
             <div>
               <p className="history-label">RECORDS MANAGEMENT</p>
@@ -115,7 +142,6 @@ function VisitorHistory() {
           </header>
 
           {/* Summary Cards */}
-
           <section className="history-summary">
             <div className="history-stat-card">
               <span>Total Records</span>
@@ -147,7 +173,6 @@ function VisitorHistory() {
           </section>
 
           {/* Search and Filters */}
-
           <section className="history-controls">
             <input
               type="text"
@@ -176,7 +201,6 @@ function VisitorHistory() {
           {error && <p className="history-error">{error}</p>}
 
           {/* Visitor History Table */}
-
           <section className="history-table-wrapper">
             <table className="history-table">
               <thead>
@@ -208,19 +232,12 @@ function VisitorHistory() {
                   filteredVisitors.map((visitor) => (
                     <tr key={visitor._id}>
                       <td>{visitor.fullName}</td>
-
                       <td>{visitor.badgeNumber || "Not assigned"}</td>
-
                       <td>{visitor.company || "—"}</td>
-
                       <td>{visitor.personToVisit}</td>
-
                       <td>{visitor.department}</td>
-
                       <td>{visitor.purposeOfVisit}</td>
-
                       <td>{formatDate(visitor.timeIn)}</td>
-
                       <td>{formatDate(visitor.timeOut)}</td>
 
                       <td>
@@ -236,6 +253,19 @@ function VisitorHistory() {
                       <td>{visitor.escortName || "Not assigned"}</td>
 
                       <td>
+                        {/* Show Restore only for hidden visitors */}
+                        {visitor.hiddenFromDashboard && (
+                          <button
+                            type="button"
+                            className="restore-visitor-button"
+                            onClick={() =>
+                              restoreVisitor(visitor._id, visitor.fullName)
+                            }
+                          >
+                            Restore
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           className="permanent-delete-button"
@@ -254,7 +284,6 @@ function VisitorHistory() {
           </section>
 
           {/* Footer */}
-
           <footer className="history-footer">
             Showing {filteredVisitors.length} of {visitors.length} records
           </footer>

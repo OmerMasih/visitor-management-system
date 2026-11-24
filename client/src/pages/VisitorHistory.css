@@ -243,3 +243,19 @@
     width: 100%;
   }
 }
+.restore-visitor-button {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 6px;
+  margin-bottom: 5px;
+}
+
+.restore-visitor-button:hover {
+  background: #15803d;
+}

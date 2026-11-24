@@ -427,4 +427,44 @@ router.patch("/:id/escort", async (req, res) => {
   }
 });
 
+// RESTORE: Show a hidden visitor on the Dashboard again
+router.patch("/:id/restore-to-dashboard", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    const visitor = await Visitor.findByIdAndUpdate(
+      id,
+      { $set: { hiddenFromDashboard: false } },
+      { new: true },
+    );
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Visitor restored to Dashboard successfully.",
+      visitor,
+    });
+  } catch (error) {
+    console.error("Restore visitor error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to restore visitor.",
+    });
+  }
+});
+
 export default router;

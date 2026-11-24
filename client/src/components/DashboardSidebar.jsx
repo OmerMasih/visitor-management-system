@@ -31,6 +31,10 @@ function DashboardSidebar() {
           <span>▤</span>
           Reports
         </NavLink>
+        <NavLink to="/admin/analytics" className="sidebar-link">
+          <span>📊</span>
+          Analytics
+        </NavLink>
 
         <p className="sidebar-label">COMING SOON</p>
 

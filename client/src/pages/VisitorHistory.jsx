@@ -11,6 +11,7 @@ function VisitorHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch all visitor records
   const fetchVisitors = async () => {
     try {
       setLoading(true);
@@ -36,11 +37,40 @@ function VisitorHistory() {
     fetchVisitors();
   }, []);
 
+  // Permanently delete visitor
+  const deleteVisitor = async (visitorId, visitorName) => {
+    const confirmed = window.confirm(
+      `PERMANENT DELETION\n\nAre you sure you want to permanently delete ${visitorName}?\n\nThis record will also disappear from the Dashboard, Reports, and Analytics.\n\nThis action cannot be undone.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(`${API_URL}/${visitorId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to delete visitor.");
+      }
+
+      await fetchVisitors();
+
+      alert("Visitor record permanently deleted.");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  // Format date and time
   const formatDate = (date) => {
     if (!date) return "—";
     return new Date(date).toLocaleString();
   };
 
+  // Search and filter records
   const filteredVisitors = visitors.filter((visitor) => {
     const search = searchTerm.toLowerCase();
 
@@ -48,7 +78,8 @@ function VisitorHistory() {
       visitor.fullName?.toLowerCase().includes(search) ||
       visitor.badgeNumber?.toLowerCase().includes(search) ||
       visitor.company?.toLowerCase().includes(search) ||
-      visitor.personToVisit?.toLowerCase().includes(search);
+      visitor.personToVisit?.toLowerCase().includes(search) ||
+      visitor.department?.toLowerCase().includes(search);
 
     const matchesStatus =
       statusFilter === "All" || visitor.status === statusFilter;
@@ -62,6 +93,8 @@ function VisitorHistory() {
 
       <main className="admin-main">
         <div className="visitor-history-page">
+          {/* Header */}
+
           <header className="history-header">
             <div>
               <p className="history-label">RECORDS MANAGEMENT</p>
@@ -80,6 +113,8 @@ function VisitorHistory() {
               {loading ? "Loading..." : "↻ Refresh"}
             </button>
           </header>
+
+          {/* Summary Cards */}
 
           <section className="history-summary">
             <div className="history-stat-card">
@@ -111,6 +146,8 @@ function VisitorHistory() {
             </div>
           </section>
 
+          {/* Search and Filters */}
+
           <section className="history-controls">
             <input
               type="text"
@@ -138,6 +175,8 @@ function VisitorHistory() {
 
           {error && <p className="history-error">{error}</p>}
 
+          {/* Visitor History Table */}
+
           <section className="history-table-wrapper">
             <table className="history-table">
               <thead>
@@ -152,29 +191,38 @@ function VisitorHistory() {
                   <th>Time Out</th>
                   <th>Status</th>
                   <th>Escort</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="10">Loading visitor records...</td>
+                    <td colSpan="11">Loading visitor records...</td>
                   </tr>
                 ) : filteredVisitors.length === 0 ? (
                   <tr>
-                    <td colSpan="10">No visitor records found.</td>
+                    <td colSpan="11">No visitor records found.</td>
                   </tr>
                 ) : (
                   filteredVisitors.map((visitor) => (
                     <tr key={visitor._id}>
                       <td>{visitor.fullName}</td>
+
                       <td>{visitor.badgeNumber || "Not assigned"}</td>
+
                       <td>{visitor.company || "—"}</td>
+
                       <td>{visitor.personToVisit}</td>
+
                       <td>{visitor.department}</td>
+
                       <td>{visitor.purposeOfVisit}</td>
+
                       <td>{formatDate(visitor.timeIn)}</td>
+
                       <td>{formatDate(visitor.timeOut)}</td>
+
                       <td>
                         <span
                           className={`history-status ${visitor.status
@@ -184,13 +232,28 @@ function VisitorHistory() {
                           {visitor.status}
                         </span>
                       </td>
+
                       <td>{visitor.escortName || "Not assigned"}</td>
+
+                      <td>
+                        <button
+                          type="button"
+                          className="permanent-delete-button"
+                          onClick={() =>
+                            deleteVisitor(visitor._id, visitor.fullName)
+                          }
+                        >
+                          Delete Permanently
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </section>
+
+          {/* Footer */}
 
           <footer className="history-footer">
             Showing {filteredVisitors.length} of {visitors.length} records

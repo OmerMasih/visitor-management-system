@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+
 import VisitorBadge from "../components/VisitorBadge";
 import DashboardSidebar from "../components/DashboardSidebar";
+
 import "./AdminDashboard.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
@@ -137,14 +139,49 @@ function AdminDashboard() {
     }
   };
 
+  // Hide visitor from Admin Dashboard only
+  const hideVisitor = async (visitorId) => {
+    const confirmed = window.confirm(
+      "Hide this visitor from the Admin Dashboard? The record will remain in Visitor History, Reports, and Analytics.",
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `${API_URL}/${visitorId}/hide-from-dashboard`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to hide visitor.");
+      }
+
+      await fetchVisitors();
+
+      alert("Visitor hidden from the Dashboard successfully.");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   // Format date and time
   const formatDate = (date) => {
     if (!date) return "—";
     return new Date(date).toLocaleString();
   };
 
-  // Filter visitors
-  const filteredVisitors = visitors.filter((visitor) => {
+  // Exclude hidden visitors from Dashboard
+  const dashboardVisitors = visitors.filter(
+    (visitor) => !visitor.hiddenFromDashboard,
+  );
+
+  // Filter visible visitors
+  const filteredVisitors = dashboardVisitors.filter((visitor) => {
     const search = searchTerm.toLowerCase();
 
     const matchesSearch =
@@ -161,17 +198,17 @@ function AdminDashboard() {
   });
 
   // Dashboard statistics
-  const totalVisitors = visitors.length;
+  const totalVisitors = dashboardVisitors.length;
 
-  const registeredVisitors = visitors.filter(
+  const registeredVisitors = dashboardVisitors.filter(
     (visitor) => visitor.status === "Registered",
   ).length;
 
-  const waitingVisitors = visitors.filter(
+  const waitingVisitors = dashboardVisitors.filter(
     (visitor) => visitor.status === "Waiting for Department",
   ).length;
 
-  const checkedOutVisitors = visitors.filter(
+  const checkedOutVisitors = dashboardVisitors.filter(
     (visitor) => visitor.status === "Checked Out",
   ).length;
 
@@ -214,6 +251,7 @@ function AdminDashboard() {
           </header>
 
           {/* Dashboard Statistics */}
+
           <section className="dashboard-stats">
             <div className="stat-card">
               <h3>Total Visitors</h3>
@@ -237,6 +275,7 @@ function AdminDashboard() {
           </section>
 
           {/* Search and Filter */}
+
           <section className="dashboard-controls">
             <input
               type="text"
@@ -265,6 +304,7 @@ function AdminDashboard() {
           {error && <p className="error-message">{error}</p>}
 
           {/* Visitors Table */}
+
           <section className="table-wrapper">
             <table className="visitor-table">
               <thead>
@@ -359,6 +399,13 @@ function AdminDashboard() {
                         >
                           Print Badge
                         </button>
+
+                        <button
+                          className="hide-visitor-button"
+                          onClick={() => hideVisitor(visitor._id)}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -368,11 +415,14 @@ function AdminDashboard() {
           </section>
 
           {/* Dashboard Footer */}
+
           <footer className="dashboard-footer">
-            Showing {filteredVisitors.length} of {totalVisitors} visitors
+            Showing {filteredVisitors.length} of {totalVisitors} visible
+            visitors
           </footer>
 
           {/* Print Badge Modal */}
+
           {selectedVisitor && (
             <VisitorBadge
               visitor={selectedVisitor}

@@ -379,3 +379,24 @@ body {
     padding: 18px;
   }
 }
+
+.permanent-delete-button {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.permanent-delete-button:hover {
+  background: #991b1b;
+}
+
+.permanent-delete-button:focus-visible {
+  outline: 3px solid #fca5a5;
+  outline-offset: 2px;
+}

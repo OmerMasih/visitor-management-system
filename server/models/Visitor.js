@@ -87,6 +87,11 @@ const visitorSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // Dashboard visibility
+    hiddenFromDashboard: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

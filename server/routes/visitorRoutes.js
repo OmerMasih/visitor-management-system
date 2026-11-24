@@ -147,6 +147,90 @@ router.get("/:id", async (req, res) => {
 });
 
 // ==========================================
+// DELETE: Permanently delete a visitor
+// ==========================================
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    const visitor = await Visitor.findByIdAndDelete(id);
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Visitor permanently deleted.",
+    });
+  } catch (error) {
+    console.error("Permanent deletion error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete visitor.",
+    });
+  }
+});
+
+// ==========================================
+// DELETE: Permanently delete a visitor
+// ==========================================
+// Dashboard visibility
+
+// ==========================================
+// PATCH: Hide visitor from Admin Dashboard
+// ==========================================
+router.patch("/:id/hide-from-dashboard", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid visitor ID.",
+      });
+    }
+
+    const visitor = await Visitor.findByIdAndUpdate(
+      id,
+      { $set: { hiddenFromDashboard: true } },
+      { new: true },
+    );
+
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Visitor hidden from dashboard successfully.",
+      visitor,
+    });
+  } catch (error) {
+    console.error("Hide visitor error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to hide visitor.",
+    });
+  }
+});
+
+// ==========================================
 // PATCH: Update visitor status
 // ==========================================
 router.patch("/:id/status", async (req, res) => {

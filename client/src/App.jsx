@@ -12,13 +12,23 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public visitor registration */}
-        <Route path="/" element={<VisitorRegistration />} />
+        {/* Homepage: Admin Dashboard */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Administrator login */}
+        {/* Public Visitor Registration */}
+        <Route path="/register" element={<VisitorRegistration />} />
+
+        {/* Admin Login */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Protected administrator pages */}
+        {/* Protected Admin Pages */}
         <Route
           path="/admin"
           element={
@@ -55,6 +65,7 @@ function App() {
           }
         />
 
+        {/* Unknown addresses return to homepage */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

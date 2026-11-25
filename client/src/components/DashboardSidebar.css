@@ -85,3 +85,30 @@
   font-size: 11px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
+
+.sidebar-logout-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  margin-top: 15px;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sidebar-logout-button:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.sidebar-logout-button span {
+  font-size: 18px;
+}

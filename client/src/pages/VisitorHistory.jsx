@@ -3,6 +3,31 @@ import DashboardSidebar from "../components/DashboardSidebar";
 import "./VisitorHistory.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
+// Authentication helper
+const adminFetch = async (url, options = {}) => {
+  const token = sessionStorage.getItem("adminToken");
+
+  if (!token) {
+    window.location.assign("/admin/login");
+    throw new Error("Please log in again.");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+    window.location.assign("/admin/login");
+  }
+
+  return response;
+};
 
 function VisitorHistory() {
   const [visitors, setVisitors] = useState([]);
@@ -17,7 +42,7 @@ function VisitorHistory() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(API_URL);
+      const response = await adminFetch(API_URL);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -46,7 +71,7 @@ function VisitorHistory() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${API_URL}/${visitorId}/restore-to-dashboard`,
         {
           method: "PATCH",
@@ -75,7 +100,7 @@ function VisitorHistory() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`${API_URL}/${visitorId}`, {
+      const response = await adminFetch(`${API_URL}/${visitorId}`, {
         method: "DELETE",
       });
 

@@ -7,6 +7,31 @@ import "./AdminDashboard.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
 
+// Send administrator token with protected API requests
+const adminFetch = async (url, options = {}) => {
+  const token = sessionStorage.getItem("adminToken");
+
+  if (!token) {
+    window.location.assign("/admin/login");
+    throw new Error("Please log in again.");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+    window.location.assign("/admin/login");
+  }
+
+  return response;
+};
 function AdminDashboard() {
   const [visitors, setVisitors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,12 +41,13 @@ function AdminDashboard() {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
 
   // Fetch visitors
+  // Fetch visitors
   const fetchVisitors = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch(API_URL);
+      const response = await adminFetch(API_URL);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -44,9 +70,12 @@ function AdminDashboard() {
   // Request escort
   const requestEscort = async (visitorId) => {
     try {
-      const response = await fetch(`${API_URL}/${visitorId}/escort-request`, {
-        method: "PATCH",
-      });
+      const response = await adminFetch(
+        `${API_URL}/${visitorId}/escort-request`,
+        {
+          method: "PATCH",
+        },
+      );
 
       const data = await response.json();
 
@@ -67,7 +96,7 @@ function AdminDashboard() {
     if (!escortName || !escortName.trim()) return;
 
     try {
-      const response = await fetch(`${API_URL}/${visitorId}/escort`, {
+      const response = await adminFetch(`${API_URL}/${visitorId}/escort`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -88,11 +117,11 @@ function AdminDashboard() {
       alert(error.message);
     }
   };
-
+  // Start escort
   // Start escort
   const startEscort = async (visitorId) => {
     try {
-      const response = await fetch(`${API_URL}/${visitorId}/status`, {
+      const response = await adminFetch(`${API_URL}/${visitorId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -115,6 +144,7 @@ function AdminDashboard() {
   };
 
   // Check out visitor
+  // Check out visitor
   const checkoutVisitor = async (visitorId) => {
     const confirmed = window.confirm(
       "Are you sure you want to check out this visitor?",
@@ -123,7 +153,7 @@ function AdminDashboard() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`${API_URL}/${visitorId}/checkout`, {
+      const response = await adminFetch(`${API_URL}/${visitorId}/checkout`, {
         method: "PATCH",
       });
 
@@ -140,6 +170,7 @@ function AdminDashboard() {
   };
 
   // Hide visitor from Admin Dashboard only
+  // Hide visitor from Admin Dashboard only
   const hideVisitor = async (visitorId) => {
     const confirmed = window.confirm(
       "Hide this visitor from the Admin Dashboard? The record will remain in Visitor History, Reports, and Analytics.",
@@ -148,7 +179,7 @@ function AdminDashboard() {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(
+      const response = await adminFetch(
         `${API_URL}/${visitorId}/hide-from-dashboard`,
         {
           method: "PATCH",

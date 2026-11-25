@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -22,15 +23,45 @@ const API_URL = "http://localhost:5000/api/visitors";
 
 const COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#9333ea", "#0891b2"];
 
+// Authentication helper
+const adminFetch = async (url, options = {}) => {
+  const token = sessionStorage.getItem("adminToken");
+
+  if (!token) {
+    window.location.assign("/admin/login");
+    throw new Error("Please log in again.");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+    window.location.assign("/admin/login");
+  }
+
+  return response;
+};
+
 function Analytics() {
   const [visitors, setVisitors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Fetch visitor records
   useEffect(() => {
     const fetchVisitors = async () => {
       try {
-        const response = await fetch(API_URL);
+        setLoading(true);
+        setError("");
+
+        const response = await adminFetch(API_URL);
         const data = await response.json();
 
         if (!response.ok || !data.success) {
@@ -48,6 +79,7 @@ function Analytics() {
     fetchVisitors();
   }, []);
 
+  // Calculate analytics
   const analytics = useMemo(() => {
     const departmentCounts = {};
     const dailyCounts = {};
@@ -127,14 +159,17 @@ function Analytics() {
             <p>Loading analytics...</p>
           ) : (
             <>
+              {/* Total Visitors */}
               <section className="analytics-total-card">
                 <span>Total Registered Visitors</span>
                 <strong>{analytics.total}</strong>
               </section>
 
               <section className="analytics-grid">
+                {/* Daily Visitor Activity */}
                 <div className="analytics-card">
                   <h2>Daily Visitor Activity</h2>
+
                   {analytics.daily.length ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <LineChart data={analytics.daily}>
@@ -155,8 +190,10 @@ function Analytics() {
                   )}
                 </div>
 
+                {/* Visitors by Department */}
                 <div className="analytics-card">
                   <h2>Visitors by Department</h2>
+
                   {analytics.departments.length ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={analytics.departments}>
@@ -172,8 +209,10 @@ function Analytics() {
                   )}
                 </div>
 
+                {/* Visitor Status */}
                 <div className="analytics-card">
                   <h2>Visitor Status</h2>
+
                   {analytics.total ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <PieChart>
@@ -193,6 +232,7 @@ function Analytics() {
                             />
                           ))}
                         </Pie>
+
                         <Tooltip />
                         <Legend />
                       </PieChart>
@@ -202,8 +242,10 @@ function Analytics() {
                   )}
                 </div>
 
+                {/* Most Common Visit Purposes */}
                 <div className="analytics-card">
                   <h2>Most Common Visit Purposes</h2>
+
                   {analytics.purposes.length ? (
                     <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={analytics.purposes} layout="vertical">

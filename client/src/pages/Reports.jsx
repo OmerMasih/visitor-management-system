@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -7,6 +8,32 @@ import DashboardSidebar from "../components/DashboardSidebar";
 import "./Reports.css";
 
 const API_URL = "http://localhost:5000/api/visitors";
+
+// Authentication helper
+const adminFetch = async (url, options = {}) => {
+  const token = sessionStorage.getItem("adminToken");
+
+  if (!token) {
+    window.location.assign("/admin/login");
+    throw new Error("Please log in again.");
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+    window.location.assign("/admin/login");
+  }
+
+  return response;
+};
 
 function Reports() {
   const [visitors, setVisitors] = useState([]);
@@ -19,13 +46,14 @@ function Reports() {
   const [department, setDepartment] = useState("All");
   const [status, setStatus] = useState("All");
 
+  // Fetch visitor records
   useEffect(() => {
     const fetchVisitors = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const response = await fetch(API_URL);
+        const response = await adminFetch(API_URL);
         const data = await response.json();
 
         if (!response.ok || !data.success) {
@@ -43,6 +71,7 @@ function Reports() {
     fetchVisitors();
   }, []);
 
+  // Get available departments
   const departments = useMemo(() => {
     return [
       "All",
@@ -50,6 +79,7 @@ function Reports() {
     ];
   }, [visitors]);
 
+  // Calculate reporting date range
   const getDateRange = () => {
     const now = new Date();
     const start = new Date(now);
@@ -67,6 +97,7 @@ function Reports() {
     return { start, end: now };
   };
 
+  // Filter visitor records
   const filteredVisitors = useMemo(() => {
     const { start, end } = getDateRange();
 
@@ -98,6 +129,7 @@ function Reports() {
     });
   }, [visitors, period, startDate, endDate, department, status]);
 
+  // Prepare report data for Excel and PDF
   const reportRows = filteredVisitors.map((visitor) => ({
     "Visitor Name": visitor.fullName || "",
     "Badge Number": visitor.badgeNumber || "",
@@ -113,6 +145,7 @@ function Reports() {
     Escort: visitor.escortName || "",
   }));
 
+  // Export Excel report
   const exportExcel = () => {
     if (!reportRows.length) {
       alert("No visitor records to export.");
@@ -120,6 +153,7 @@ function Reports() {
     }
 
     const worksheet = XLSX.utils.json_to_sheet(reportRows);
+
     worksheet["!cols"] = [
       { wch: 22 },
       { wch: 16 },
@@ -143,6 +177,7 @@ function Reports() {
     );
   };
 
+  // Export PDF report
   const exportPDF = () => {
     if (!reportRows.length) {
       alert("No visitor records to export.");
@@ -196,6 +231,7 @@ function Reports() {
             </div>
           </header>
 
+          {/* Summary Cards */}
           <section className="reports-summary">
             <div className="report-stat-card">
               <span>Total Records</span>
@@ -227,6 +263,7 @@ function Reports() {
             </div>
           </section>
 
+          {/* Search and Filters */}
           <section className="report-filter-panel">
             <h2>Report Filters</h2>
 
@@ -303,6 +340,7 @@ function Reports() {
             </div>
           </section>
 
+          {/* Export Reports */}
           <section className="report-export-panel">
             <div>
               <h2>Export Reports</h2>

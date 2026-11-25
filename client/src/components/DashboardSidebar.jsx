@@ -1,7 +1,21 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./DashboardSidebar.css";
 
 function DashboardSidebar() {
+  const navigate = useNavigate();
+
+  // Admin logout
+  const handleLogout = () => {
+    const confirmed = window.confirm("Are you sure you want to log out?");
+
+    if (!confirmed) return;
+
+    sessionStorage.removeItem("adminToken");
+    sessionStorage.removeItem("adminUser");
+
+    navigate("/admin/login", { replace: true });
+  };
+
   return (
     <aside className="dashboard-sidebar">
       <div className="sidebar-brand">
@@ -17,7 +31,7 @@ function DashboardSidebar() {
           Dashboard
         </NavLink>
 
-        <NavLink to="/" end className="sidebar-link">
+        <NavLink to="/register" className="sidebar-link">
           <span>＋</span>
           Visitor Registration
         </NavLink>
@@ -31,6 +45,7 @@ function DashboardSidebar() {
           <span>▤</span>
           Reports
         </NavLink>
+
         <NavLink to="/admin/analytics" className="sidebar-link">
           <span>📊</span>
           Analytics
@@ -44,7 +59,18 @@ function DashboardSidebar() {
         </div>
       </nav>
 
-      <div className="sidebar-footer">Visitor Management System</div>
+      <div className="sidebar-footer">
+        <p>Visitor Management System</p>
+
+        <button
+          type="button"
+          className="sidebar-logout-button"
+          onClick={handleLogout}
+        >
+          <span>↪</span>
+          Logout
+        </button>
+      </div>
     </aside>
   );
 }

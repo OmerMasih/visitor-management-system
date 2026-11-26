@@ -6,45 +6,63 @@ import "./AdminSettings.css";
 function AdminSettings() {
   const navigate = useNavigate();
 
+  // Change password states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
+  // Create admin states
+  const [adminUsername, setAdminUsername] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
+  const [adminError, setAdminError] = useState("");
+  const [adminLoading, setAdminLoading] = useState(false);
 
-    setMessage("");
-    setError("");
-
-    if (newPassword.length < 12) {
-      setError("New password must be at least 12 characters.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("New passwords do not match.");
-      return;
-    }
-
-    if (currentPassword === newPassword) {
-      setError(
-        "Your new password must be different from your current password.",
-      );
-      return;
-    }
-
+  // Get administrator token
+  const getToken = () => {
     const token = sessionStorage.getItem("adminToken");
 
     if (!token) {
       navigate("/admin/login", { replace: true });
+      return null;
+    }
+
+    return token;
+  };
+
+  // ==========================================
+  // CHANGE ADMIN PASSWORD
+  // ==========================================
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+
+    setPasswordMessage("");
+    setPasswordError("");
+
+    if (newPassword.length < 12) {
+      setPasswordError("New password must be at least 12 characters.");
       return;
     }
 
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      setPasswordError("Choose a password different from your current one.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) return;
+
     try {
-      setLoading(true);
+      setPasswordLoading(true);
 
       const response = await fetch(
         "http://localhost:5000/api/auth/change-password",
@@ -63,18 +81,18 @@ function AdminSettings() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          sessionStorage.removeItem("adminToken");
-          sessionStorage.removeItem("adminUser");
-          navigate("/admin/login", { replace: true });
-          return;
-        }
+      if (response.status === 401) {
+        sessionStorage.removeItem("adminToken");
+        sessionStorage.removeItem("adminUser");
+        navigate("/admin/login", { replace: true });
+        return;
+      }
 
+      if (!response.ok) {
         throw new Error(data.message || "Unable to change password.");
       }
 
-      setMessage("Password changed successfully. Please log in again.");
+      setPasswordMessage("Password changed successfully. Please log in again.");
 
       sessionStorage.removeItem("adminToken");
       sessionStorage.removeItem("adminUser");
@@ -87,9 +105,81 @@ function AdminSettings() {
         navigate("/admin/login", { replace: true });
       }, 2000);
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      setPasswordError(err.message || "Something went wrong.");
     } finally {
-      setLoading(false);
+      setPasswordLoading(false);
+    }
+  };
+
+  // ==========================================
+  // CREATE ADMIN ACCOUNT
+  // ==========================================
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+
+    setAdminMessage("");
+    setAdminError("");
+
+    if (adminUsername.trim().length < 3) {
+      setAdminError("Username must contain at least 3 characters.");
+      return;
+    }
+
+    if (adminPassword.length < 12) {
+      setAdminError("Password must be at least 12 characters.");
+      return;
+    }
+
+    if (adminPassword !== confirmAdminPassword) {
+      setAdminError("Passwords do not match.");
+      return;
+    }
+
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      setAdminLoading(true);
+
+      const response = await fetch(
+        "http://localhost:5000/api/auth/create-admin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            username: adminUsername.trim(),
+            password: adminPassword,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        sessionStorage.removeItem("adminToken");
+        sessionStorage.removeItem("adminUser");
+        navigate("/admin/login", { replace: true });
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to create admin account.");
+      }
+
+      setAdminMessage(
+        `Administrator account "${data.admin.username}" created successfully.`,
+      );
+
+      setAdminUsername("");
+      setAdminPassword("");
+      setConfirmAdminPassword("");
+    } catch (err) {
+      setAdminError(err.message || "Something went wrong.");
+    } finally {
+      setAdminLoading(false);
     }
   };
 
@@ -100,18 +190,24 @@ function AdminSettings() {
       <main className="admin-settings-content">
         <div className="settings-header">
           <h1>Admin Settings</h1>
-          <p>Manage your administrator account and security.</p>
+          <p>Manage administrator accounts and security.</p>
         </div>
 
+        {/* CHANGE PASSWORD */}
         <section className="settings-card">
           <h2>Change Password</h2>
+
           <p className="settings-description">
-            Update your administrator password regularly to help protect your
-            account.
+            Update your administrator password to help protect your account.
           </p>
 
-          {error && <div className="settings-error">{error}</div>}
-          {message && <div className="settings-success">{message}</div>}
+          {passwordError && (
+            <div className="settings-error">{passwordError}</div>
+          )}
+
+          {passwordMessage && (
+            <div className="settings-success">{passwordMessage}</div>
+          )}
 
           <form onSubmit={handleChangePassword}>
             <div className="settings-form-group">
@@ -156,9 +252,86 @@ function AdminSettings() {
             <button
               type="submit"
               className="settings-submit-button"
-              disabled={loading}
+              disabled={passwordLoading}
             >
-              {loading ? "Updating..." : "Update Password"}
+              {passwordLoading ? "Updating..." : "Update Password"}
+            </button>
+          </form>
+        </section>
+
+        {/* CREATE ADMIN ACCOUNT */}
+        <section className="settings-card">
+          <h2>Create Admin Account</h2>
+
+          <p className="settings-description">
+            Create a separate administrator account for another authorized user.
+          </p>
+
+          {adminError && <div className="settings-error">{adminError}</div>}
+
+          {adminMessage && (
+            <div className="settings-success">{adminMessage}</div>
+          )}
+
+          <form onSubmit={handleCreateAdmin}>
+            <div className="settings-form-group">
+              <label htmlFor="adminUsername">New Admin Username</label>
+              <input
+                id="adminUsername"
+                type="text"
+                value={adminUsername}
+                onChange={(e) => setAdminUsername(e.target.value)}
+                placeholder="Enter username"
+                minLength={3}
+                maxLength={30}
+                pattern="[a-zA-Z0-9._-]+"
+                title="Use letters, numbers, dots, underscores, or hyphens."
+                required
+                autoComplete="off"
+              />
+              <small>
+                3–30 characters. Letters, numbers, dots, underscores, and
+                hyphens.
+              </small>
+            </div>
+
+            <div className="settings-form-group">
+              <label htmlFor="adminPassword">New Admin Password</label>
+              <input
+                id="adminPassword"
+                type="password"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+                placeholder="Enter password"
+                minLength={12}
+                required
+                autoComplete="new-password"
+              />
+              <small>Use at least 12 characters.</small>
+            </div>
+
+            <div className="settings-form-group">
+              <label htmlFor="confirmAdminPassword">
+                Confirm New Admin Password
+              </label>
+              <input
+                id="confirmAdminPassword"
+                type="password"
+                value={confirmAdminPassword}
+                onChange={(e) => setConfirmAdminPassword(e.target.value)}
+                placeholder="Confirm password"
+                minLength={12}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="settings-submit-button"
+              disabled={adminLoading}
+            >
+              {adminLoading ? "Creating Account..." : "Create Admin Account"}
             </button>
           </form>
         </section>

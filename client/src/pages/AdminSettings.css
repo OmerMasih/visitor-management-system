@@ -120,3 +120,26 @@
     padding: 20px;
   }
 }
+
+/* Space between the settings cards */
+.settings-card + .settings-card {
+  margin-top: 25px;
+}
+
+/* Make both settings sections consistent */
+.settings-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Better layout on smaller screens */
+@media (max-width: 768px) {
+  .admin-settings-layout {
+    flex-direction: column;
+  }
+
+  .admin-settings-content {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

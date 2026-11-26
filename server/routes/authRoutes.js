@@ -140,4 +140,87 @@ router.patch("/change-password", authMiddleware, async (req, res) => {
   }
 });
 
+// ==========================================
+// CREATE ADMIN ACCOUNT
+// ==========================================
+router.post("/create-admin", authMiddleware, async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Username and password are required.",
+      });
+    }
+
+    const cleanUsername = username.trim().toLowerCase();
+
+    if (cleanUsername.length < 3 || cleanUsername.length > 30) {
+      return res.status(400).json({
+        success: false,
+        message: "Username must be between 3 and 30 characters.",
+      });
+    }
+
+    if (!/^[a-z0-9._-]+$/.test(cleanUsername)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Username can contain letters, numbers, dots, underscores, and hyphens only.",
+      });
+    }
+
+    if (password.length < 12) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must contain at least 12 characters.",
+      });
+    }
+
+    const existingAdmin = await Admin.findOne({
+      username: cleanUsername,
+    });
+
+    if (existingAdmin) {
+      return res.status(409).json({
+        success: false,
+        message: "This username is already registered.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const newAdmin = await Admin.create({
+      username: cleanUsername,
+      password: hashedPassword,
+      role: "admin",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Administrator account created successfully.",
+      admin: {
+        id: newAdmin._id,
+        username: newAdmin.username,
+        role: newAdmin.role,
+      },
+    });
+  } catch (error) {
+    console.error("Create admin error:", error);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "This username is already registered.",
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to create administrator account.",
+    });
+  }
+});
+
 export default router;

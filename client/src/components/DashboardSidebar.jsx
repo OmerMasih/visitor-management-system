@@ -51,12 +51,12 @@ function DashboardSidebar() {
           Analytics
         </NavLink>
 
-        <p className="sidebar-label">COMING SOON</p>
+        <p className="sidebar-label">ADMINISTRATION</p>
 
-        <div className="sidebar-disabled">
+        <NavLink to="/admin/settings" className="sidebar-link">
           <span>⚙</span>
-          Settings
-        </div>
+          Admin Settings
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">

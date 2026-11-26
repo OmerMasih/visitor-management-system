@@ -2,10 +2,13 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// ==========================================
 // ADMIN LOGIN
+// ==========================================
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -66,6 +69,73 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to log in.",
+    });
+  }
+});
+
+// ==========================================
+// CHANGE ADMIN PASSWORD
+// ==========================================
+router.patch("/change-password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required.",
+      });
+    }
+
+    if (newPassword.length < 12) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must contain at least 12 characters.",
+      });
+    }
+
+    const admin = await Admin.findById(req.admin.id);
+
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Administrator account not found.",
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(currentPassword, admin.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Your current password is incorrect.",
+      });
+    }
+
+    const samePassword = await bcrypt.compare(newPassword, admin.password);
+
+    if (samePassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Please choose a different password.",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    admin.password = hashedPassword;
+    await admin.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Password changed successfully. Please log in again.",
+    });
+  } catch (error) {
+    console.error("Change password error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to change password.",
     });
   }
 });

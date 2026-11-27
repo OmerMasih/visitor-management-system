@@ -14,7 +14,7 @@ function AdminSettings() {
   const [passwordError, setPasswordError] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Create admin states
+  // Create employee states
   const [adminUsername, setAdminUsername] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
@@ -34,9 +34,7 @@ function AdminSettings() {
     return token;
   };
 
-  // ==========================================
-  // CHANGE ADMIN PASSWORD
-  // ==========================================
+  // Change administrator password
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
@@ -111,9 +109,7 @@ function AdminSettings() {
     }
   };
 
-  // ==========================================
-  // CREATE ADMIN ACCOUNT
-  // ==========================================
+  // Create employee account
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
 
@@ -166,11 +162,11 @@ function AdminSettings() {
       }
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to create admin account.");
+        throw new Error(data.message || "Unable to create employee account.");
       }
 
       setAdminMessage(
-        `Administrator account "${data.admin.username}" created successfully.`,
+        `Employee account "${data.user.username}" created successfully.`,
       );
 
       setAdminUsername("");
@@ -190,7 +186,7 @@ function AdminSettings() {
       <main className="admin-settings-content">
         <div className="settings-header">
           <h1>Admin Settings</h1>
-          <p>Manage administrator accounts and security.</p>
+          <p>Manage administrator security and employee accounts.</p>
         </div>
 
         {/* CHANGE PASSWORD */}
@@ -259,12 +255,13 @@ function AdminSettings() {
           </form>
         </section>
 
-        {/* CREATE ADMIN ACCOUNT */}
+        {/* CREATE EMPLOYEE ACCOUNT */}
         <section className="settings-card">
-          <h2>Create Admin Account</h2>
+          <h2>Create Employee Account</h2>
 
           <p className="settings-description">
-            Create a separate administrator account for another authorized user.
+            Create an employee login account. Employees cannot access
+            administrator account settings.
           </p>
 
           {adminError && <div className="settings-error">{adminError}</div>}
@@ -275,7 +272,7 @@ function AdminSettings() {
 
           <form onSubmit={handleCreateAdmin}>
             <div className="settings-form-group">
-              <label htmlFor="adminUsername">New Admin Username</label>
+              <label htmlFor="adminUsername">Employee Username</label>
               <input
                 id="adminUsername"
                 type="text"
@@ -296,7 +293,7 @@ function AdminSettings() {
             </div>
 
             <div className="settings-form-group">
-              <label htmlFor="adminPassword">New Admin Password</label>
+              <label htmlFor="adminPassword">Employee Password</label>
               <input
                 id="adminPassword"
                 type="password"
@@ -312,7 +309,7 @@ function AdminSettings() {
 
             <div className="settings-form-group">
               <label htmlFor="confirmAdminPassword">
-                Confirm New Admin Password
+                Confirm Employee Password
               </label>
               <input
                 id="confirmAdminPassword"
@@ -331,7 +328,7 @@ function AdminSettings() {
               className="settings-submit-button"
               disabled={adminLoading}
             >
-              {adminLoading ? "Creating Account..." : "Create Admin Account"}
+              {adminLoading ? "Creating Account..." : "Create Employee Account"}
             </button>
           </form>
         </section>

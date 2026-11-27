@@ -31,9 +31,11 @@ function AdminLogin() {
         throw new Error(data.message || "Login failed.");
       }
 
+      // Save login token and account information
       sessionStorage.setItem("adminToken", data.token);
-      sessionStorage.setItem("adminUser", JSON.stringify(data.admin));
+      sessionStorage.setItem("adminUser", JSON.stringify(data.user));
 
+      // Open the dashboard
       navigate("/admin", { replace: true });
     } catch (error) {
       setError(error.message);
@@ -47,7 +49,7 @@ function AdminLogin() {
       <div className="login-card">
         <div className="login-icon">🔐</div>
 
-        <h1>Administrator Login</h1>
+        <h1>Visitor Management Login</h1>
         <p>Sign in to access the Visitor Management System.</p>
 
         <form onSubmit={handleLogin}>

@@ -7,7 +7,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // ==========================================
-// ADMIN LOGIN
+// LOGIN - ADMIN AND EMPLOYEE
 // ==========================================
 router.post("/login", async (req, res) => {
   try {
@@ -20,18 +20,18 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const admin = await Admin.findOne({
+    const user = await Admin.findOne({
       username: username.trim().toLowerCase(),
     });
 
-    if (!admin) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: "Invalid username or password.",
       });
     }
 
-    const passwordMatch = await bcrypt.compare(password, admin.password);
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       return res.status(401).json({
@@ -46,8 +46,8 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: admin._id,
-        role: admin.role,
+        id: user._id,
+        role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "8h" },
@@ -57,14 +57,14 @@ router.post("/login", async (req, res) => {
       success: true,
       message: "Login successful.",
       token,
-      admin: {
-        id: admin._id,
-        username: admin.username,
-        role: admin.role,
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
       },
     });
   } catch (error) {
-    console.error("Admin login error:", error);
+    console.error("Login error:", error);
 
     return res.status(500).json({
       success: false,
@@ -75,6 +75,7 @@ router.post("/login", async (req, res) => {
 
 // ==========================================
 // CHANGE ADMIN PASSWORD
+// ADMIN ONLY
 // ==========================================
 router.patch("/change-password", authMiddleware, async (req, res) => {
   try {
@@ -94,7 +95,7 @@ router.patch("/change-password", authMiddleware, async (req, res) => {
       });
     }
 
-    const admin = await Admin.findById(req.admin.id);
+    const admin = await Admin.findById(req.user.id);
 
     if (!admin) {
       return res.status(404).json({
@@ -121,9 +122,7 @@ router.patch("/change-password", authMiddleware, async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-
-    admin.password = hashedPassword;
+    admin.password = await bcrypt.hash(newPassword, 12);
     await admin.save();
 
     return res.status(200).json({
@@ -141,7 +140,8 @@ router.patch("/change-password", authMiddleware, async (req, res) => {
 });
 
 // ==========================================
-// CREATE ADMIN ACCOUNT
+// CREATE EMPLOYEE ACCOUNT
+// ADMIN ONLY
 // ==========================================
 router.post("/create-admin", authMiddleware, async (req, res) => {
   try {
@@ -178,11 +178,11 @@ router.post("/create-admin", authMiddleware, async (req, res) => {
       });
     }
 
-    const existingAdmin = await Admin.findOne({
+    const existingUser = await Admin.findOne({
       username: cleanUsername,
     });
 
-    if (existingAdmin) {
+    if (existingUser) {
       return res.status(409).json({
         success: false,
         message: "This username is already registered.",
@@ -191,23 +191,23 @@ router.post("/create-admin", authMiddleware, async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const newAdmin = await Admin.create({
+    const newEmployee = await Admin.create({
       username: cleanUsername,
       password: hashedPassword,
-      role: "admin",
+      role: "employee",
     });
 
     return res.status(201).json({
       success: true,
-      message: "Administrator account created successfully.",
-      admin: {
-        id: newAdmin._id,
-        username: newAdmin.username,
-        role: newAdmin.role,
+      message: "Employee account created successfully.",
+      user: {
+        id: newEmployee._id,
+        username: newEmployee.username,
+        role: newEmployee.role,
       },
     });
   } catch (error) {
-    console.error("Create admin error:", error);
+    console.error("Create employee error:", error);
 
     if (error.code === 11000) {
       return res.status(409).json({
@@ -218,7 +218,7 @@ router.post("/create-admin", authMiddleware, async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Unable to create administrator account.",
+      message: "Unable to create employee account.",
     });
   }
 });

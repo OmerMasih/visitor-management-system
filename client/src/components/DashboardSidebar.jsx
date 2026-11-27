@@ -4,7 +4,18 @@ import "./DashboardSidebar.css";
 function DashboardSidebar() {
   const navigate = useNavigate();
 
-  // Admin logout
+  // Get logged-in user information
+  let user = null;
+
+  try {
+    user = JSON.parse(sessionStorage.getItem("adminUser"));
+  } catch {
+    user = null;
+  }
+
+  const isAdmin = user?.role === "admin";
+
+  // Logout
   const handleLogout = () => {
     const confirmed = window.confirm("Are you sure you want to log out?");
 
@@ -51,12 +62,17 @@ function DashboardSidebar() {
           Analytics
         </NavLink>
 
-        <p className="sidebar-label">ADMINISTRATION</p>
+        {/* Administrator-only navigation */}
+        {isAdmin && (
+          <>
+            <p className="sidebar-label">ADMINISTRATION</p>
 
-        <NavLink to="/admin/settings" className="sidebar-link">
-          <span>⚙</span>
-          Admin Settings
-        </NavLink>
+            <NavLink to="/admin/settings" className="sidebar-link">
+              <span>⚙</span>
+              Admin Settings
+            </NavLink>
+          </>
+        )}
       </nav>
 
       <div className="sidebar-footer">

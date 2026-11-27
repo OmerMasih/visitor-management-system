@@ -2,8 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import Visitor from "../models/Visitor.js";
 import Counter from "../models/Counter.js";
-import authMiddleware from "../middleware/authMiddleware.js";
-
+import {
+  authenticateUser,
+  requireAdmin,
+} from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // ==========================================
@@ -49,7 +51,7 @@ router.post("/", async (req, res) => {
       { _id: "visitorBadge" },
       { $inc: { sequence: 1 } },
       {
-        new: true,
+        returnDocument: "after",
         upsert: true,
         setDefaultsOnInsert: true,
       },
@@ -87,31 +89,9 @@ router.post("/", async (req, res) => {
 });
 
 // Protect all administrator routes below this point
-router.use(authMiddleware);
+// Require login for all visitor-management routes below this point
+router.use(authenticateUser);
 
-// ==========================================
-// GET: Retrieve all visitors
-// ==========================================
-router.get("/", async (req, res) => {
-  try {
-    const visitors = await Visitor.find().sort({
-      createdAt: -1,
-    });
-
-    return res.status(200).json({
-      success: true,
-      count: visitors.length,
-      visitors,
-    });
-  } catch (error) {
-    console.error("Retrieve visitors error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Unable to retrieve visitors.",
-    });
-  }
-});
 // ==========================================
 // GET: Retrieve all visitors
 // ==========================================
@@ -176,7 +156,7 @@ router.get("/:id", async (req, res) => {
 // ==========================================
 // DELETE: Permanently delete a visitor
 // ==========================================
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -218,7 +198,7 @@ router.delete("/:id", async (req, res) => {
 // ==========================================
 // PATCH: Hide visitor from Admin Dashboard
 // ==========================================
-router.patch("/:id/hide-from-dashboard", async (req, res) => {
+router.patch("/:id/hide-from-dashboard", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -232,7 +212,7 @@ router.patch("/:id/hide-from-dashboard", async (req, res) => {
     const visitor = await Visitor.findByIdAndUpdate(
       id,
       { $set: { hiddenFromDashboard: true } },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     if (!visitor) {
@@ -292,7 +272,7 @@ router.patch("/:id/status", async (req, res) => {
     const visitor = await Visitor.findByIdAndUpdate(
       id,
       { status },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!visitor) {
@@ -356,7 +336,7 @@ router.patch("/:id/checkout", async (req, res) => {
         },
       },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: false,
       },
     );
@@ -384,7 +364,7 @@ router.patch("/:id/escort-request", async (req, res) => {
     const visitor = await Visitor.findByIdAndUpdate(
       req.params.id,
       { status: "Escort Requested" },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!visitor) {
@@ -429,7 +409,7 @@ router.patch("/:id/escort", async (req, res) => {
         escortName: escortName.trim(),
         status: "Escort Accepted",
       },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
 
     if (!visitor) {
@@ -455,7 +435,7 @@ router.patch("/:id/escort", async (req, res) => {
 });
 
 // RESTORE: Show a hidden visitor on the Dashboard again
-router.patch("/:id/restore-to-dashboard", async (req, res) => {
+router.patch("/:id/restore-to-dashboard", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -469,7 +449,7 @@ router.patch("/:id/restore-to-dashboard", async (req, res) => {
     const visitor = await Visitor.findByIdAndUpdate(
       id,
       { $set: { hiddenFromDashboard: false } },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     if (!visitor) {

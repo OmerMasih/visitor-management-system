@@ -13,7 +13,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Homepage: Admin Dashboard */}
+        {/* Homepage: Dashboard for logged-in users */}
         <Route
           path="/"
           element={
@@ -26,10 +26,10 @@ function App() {
         {/* Public Visitor Registration */}
         <Route path="/register" element={<VisitorRegistration />} />
 
-        {/* Admin Login */}
+        {/* Login */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Protected Admin Pages */}
+        {/* Dashboard */}
         <Route
           path="/admin"
           element={
@@ -38,15 +38,18 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Admin Settings: ADMIN ONLY */}
         <Route
           path="/admin/settings"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["admin"]}>
               <AdminSettings />
             </ProtectedRoute>
           }
         />
 
+        {/* Visitor History */}
         <Route
           path="/admin/history"
           element={
@@ -56,6 +59,7 @@ function App() {
           }
         />
 
+        {/* Reports */}
         <Route
           path="/admin/reports"
           element={
@@ -65,6 +69,7 @@ function App() {
           }
         />
 
+        {/* Analytics */}
         <Route
           path="/admin/analytics"
           element={
@@ -74,7 +79,7 @@ function App() {
           }
         />
 
-        {/* Unknown addresses return to homepage */}
+        {/* Unknown addresses */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

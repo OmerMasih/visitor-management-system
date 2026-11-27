@@ -233,6 +233,7 @@ function VisitorHistory() {
                   <th>Visitor Name</th>
                   <th>Badge Number</th>
                   <th>Company</th>
+                  <th>Identification Type</th>
                   <th>Person to Visit</th>
                   <th>Department</th>
                   <th>Purpose</th>

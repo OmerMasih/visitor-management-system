@@ -216,6 +216,44 @@ body {
   cursor: pointer;
 }
 
+/* Identification type checkboxes */
+.identification-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 4px;
+}
+
+.identification-options .checkbox-label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.identification-options .checkbox-label input {
+  width: 18px;
+  height: 18px;
+  min-height: auto;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.identification-options .checkbox-label span {
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .checkbox-label input {
   flex-shrink: 0;
   margin-top: 4px;

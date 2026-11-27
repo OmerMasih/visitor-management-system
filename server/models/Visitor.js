@@ -20,7 +20,11 @@ const visitorSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
-
+    identificationTypes: {
+      type: [String],
+      enum: ["CDL", "DL", "OTH"],
+      default: [],
+    },
     personToVisit: {
       type: String,
       required: true,

@@ -343,6 +343,7 @@ function AdminDashboard() {
                   <th>Visitor Name</th>
                   <th>Badge Number</th>
                   <th>Company</th>
+                  <th>Identification Type</th>
                   <th>Person to Visit</th>
                   <th>Department</th>
                   <th>Purpose</th>
@@ -357,7 +358,7 @@ function AdminDashboard() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="11">Loading visitors...</td>
+                    <td colSpan="12">Loading visitors...</td>
                   </tr>
                 ) : filteredVisitors.length === 0 ? (
                   <tr>
@@ -373,6 +374,13 @@ function AdminDashboard() {
                       </td>
 
                       <td>{visitor.company || "—"}</td>
+
+                      <td>
+                        {visitor.identificationTypes?.length
+                          ? visitor.identificationTypes.join(", ")
+                          : "—"}
+                      </td>
+
                       <td>{visitor.personToVisit}</td>
                       <td>{visitor.department}</td>
                       <td>{visitor.purposeOfVisit}</td>

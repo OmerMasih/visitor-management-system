@@ -17,6 +17,7 @@ router.post("/", async (req, res) => {
       fullName,
       visitorSignature,
       company,
+      identificationTypes,
       personToVisit,
       department,
       purposeOfVisit,
@@ -25,6 +26,20 @@ router.post("/", async (req, res) => {
     } = req.body;
 
     // Validate required fields
+    const allowedIdentificationTypes = ["CDL", "DL", "OTH"];
+
+    if (
+      !Array.isArray(identificationTypes) ||
+      identificationTypes.length === 0 ||
+      identificationTypes.some(
+        (type) => !allowedIdentificationTypes.includes(type),
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select a valid identification type.",
+      });
+    }
     if (
       !fullName?.trim() ||
       !visitorSignature?.trim() ||
@@ -64,6 +79,7 @@ router.post("/", async (req, res) => {
       fullName,
       visitorSignature,
       company,
+      identificationTypes,
       personToVisit,
       department,
       purposeOfVisit,

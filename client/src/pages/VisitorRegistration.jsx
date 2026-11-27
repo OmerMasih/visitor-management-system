@@ -5,6 +5,7 @@ import "./VisitorRegistration.css";
 function VisitorRegistration() {
   const [formData, setFormData] = useState({
     fullName: "",
+    identificationTypes: [],
     visitorSignature: "",
     company: "",
     personToVisit: "",
@@ -22,6 +23,17 @@ function VisitorRegistration() {
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
+    if (name === "identificationTypes") {
+      setFormData((previous) => ({
+        ...previous,
+        identificationTypes: checked
+          ? [...previous.identificationTypes, value]
+          : previous.identificationTypes.filter((item) => item !== value),
+      }));
+
+      return;
+    }
+
     setFormData((previous) => ({
       ...previous,
       [name]: type === "checkbox" ? checked : value,
@@ -34,7 +46,12 @@ function VisitorRegistration() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
+    if (formData.identificationTypes.length === 0) {
+      setError(
+        "Please select at least one identification type: CDL, DL, or OTH.",
+      );
+      return;
+    }
     if (formData.department === "Other" && !otherDepartment.trim()) {
       setError("Please enter the department name.");
       return;
@@ -59,6 +76,7 @@ function VisitorRegistration() {
 
       setFormData({
         fullName: "",
+        identificationTypes: [],
         visitorSignature: "",
         company: "",
         personToVisit: "",
@@ -168,7 +186,24 @@ function VisitorRegistration() {
                 placeholder="Enter company name"
               />
             </div>
+            <div className="form-group full-width">
+              <label>Identification Type Presented *</label>
 
+              <div className="identification-options">
+                {["CDL", "DL", "OTH"].map((type) => (
+                  <label key={type} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="identificationTypes"
+                      value={type}
+                      checked={formData.identificationTypes.includes(type)}
+                      onChange={handleChange}
+                    />
+                    <span>{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <div className="form-group">
               <label htmlFor="personToVisit">Person You Are Visiting *</label>
               <input

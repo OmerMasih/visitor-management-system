@@ -1,4 +1,5 @@
 import express from "express";
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Admin from "../models/Admin.js";
@@ -39,7 +40,14 @@ router.post("/login", async (req, res) => {
         message: "Invalid username or password.",
       });
     }
-
+    // Prevent deactivated accounts from logging in
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Your account has been deactivated. Contact your administrator.",
+      });
+    }
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is not configured.");
     }
@@ -222,5 +230,139 @@ router.post("/create-admin", authMiddleware, async (req, res) => {
     });
   }
 });
+
+// ==========================================
+// GET ALL EMPLOYEE ACCOUNTS
+// ADMIN ONLY
+// ==========================================
+router.get("/employees", authMiddleware, async (req, res) => {
+  try {
+    const employees = await Admin.find({ role: "employee" })
+      .select("_id username role isActive createdAt")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      count: employees.length,
+      employees,
+    });
+  } catch (error) {
+    console.error("Get employees error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve employee accounts.",
+    });
+  }
+});
+
+// ==========================================
+// ACTIVATE OR DEACTIVATE EMPLOYEE
+// ADMIN ONLY
+// ==========================================
+router.patch("/employees/:id/status", authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isActive } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid employee ID.",
+      });
+    }
+
+    if (typeof isActive !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        message: "A valid account status is required.",
+      });
+    }
+
+    const employee = await Admin.findOneAndUpdate(
+      { _id: id, role: "employee" },
+      { $set: { isActive } },
+      { returnDocument: "after", runValidators: true },
+    ).select("_id username role isActive");
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee account not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: isActive
+        ? "Employee account activated successfully."
+        : "Employee account deactivated successfully.",
+      employee,
+    });
+  } catch (error) {
+    console.error("Update employee status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to update employee account status.",
+    });
+  }
+});
+
+// ==========================================
+// RESET EMPLOYEE PASSWORD
+// ADMIN ONLY
+// ==========================================
+router.patch(
+  "/employees/:id/reset-password",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { newPassword } = req.body;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid employee ID.",
+        });
+      }
+
+      if (!newPassword || newPassword.length < 12) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must contain at least 12 characters.",
+        });
+      }
+
+      const employee = await Admin.findOne({
+        _id: id,
+        role: "employee",
+      });
+
+      if (!employee) {
+        return res.status(404).json({
+          success: false,
+          message: "Employee account not found.",
+        });
+      }
+
+      employee.password = await bcrypt.hash(newPassword, 12);
+      await employee.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Employee password reset successfully.",
+      });
+    } catch (error) {
+      console.error("Reset employee password error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to reset employee password.",
+      });
+    }
+  },
+);
 
 export default router;

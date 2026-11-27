@@ -66,7 +66,10 @@ function DashboardSidebar() {
         {isAdmin && (
           <>
             <p className="sidebar-label">ADMINISTRATION</p>
-
+            <NavLink to="/admin/employees" className="sidebar-link">
+              <span>👥</span>
+              Employee Management
+            </NavLink>
             <NavLink to="/admin/settings" className="sidebar-link">
               <span>⚙</span>
               Admin Settings

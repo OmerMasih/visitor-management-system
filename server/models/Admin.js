@@ -21,6 +21,13 @@ const adminSchema = new mongoose.Schema(
       default: "employee",
       required: true,
     },
+
+    // Account activation status
+    isActive: {
+      type: Boolean,
+      default: true,
+      required: true,
+    },
   },
   { timestamps: true },
 );

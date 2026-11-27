@@ -8,6 +8,7 @@ import Analytics from "./pages/Analytics";
 import AdminLogin from "./pages/AdminLogin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminSettings from "./pages/AdminSettings";
+import EmployeeManagement from "./pages/EmployeeManagement";
 
 function App() {
   return (
@@ -45,6 +46,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminSettings />
+            </ProtectedRoute>
+          }
+        />
+        {/* Employee Management: ADMIN ONLY */}
+        <Route
+          path="/admin/employees"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <EmployeeManagement />
             </ProtectedRoute>
           }
         />

@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:5000/api";
+import API_URL from "../config";
+
+const API_BASE_URL = `${API_URL}/api`;
 
 export const registerVisitor = async (visitorData) => {
   const response = await fetch(`${API_URL}/visitors`, {

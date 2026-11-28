@@ -28,14 +28,11 @@ function EmployeeManagement() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        `${API_URL}/api/auth/employees/${employee._id}/reset-password`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_URL}/api/auth/employees`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await response.json();
 

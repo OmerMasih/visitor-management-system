@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import API_URL from "../config";
 import VisitorBadge from "../components/VisitorBadge";
 import DashboardSidebar from "../components/DashboardSidebar";
-
 import "./AdminDashboard.css";
 
 const VISITORS_API = `${API_URL}/api/visitors`;
@@ -32,6 +31,7 @@ const adminFetch = async (url, options = {}) => {
 
   return response;
 };
+
 function AdminDashboard() {
   const [visitors, setVisitors] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,13 +41,12 @@ function AdminDashboard() {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
 
   // Fetch visitors
-  // Fetch visitors
   const fetchVisitors = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await adminFetch(API_URL);
+      const response = await adminFetch(VISITORS_API);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -71,10 +70,8 @@ function AdminDashboard() {
   const requestEscort = async (visitorId) => {
     try {
       const response = await adminFetch(
-        `${API_URL}/${visitorId}/escort-request`,
-        {
-          method: "PATCH",
-        },
+        `${VISITORS_API}/${visitorId}/escort-request`,
+        { method: "PATCH" },
       );
 
       const data = await response.json();
@@ -96,7 +93,7 @@ function AdminDashboard() {
     if (!escortName || !escortName.trim()) return;
 
     try {
-      const response = await adminFetch(`${API_URL}/${visitorId}/escort`, {
+      const response = await adminFetch(`${VISITORS_API}/${visitorId}/escort`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -117,11 +114,11 @@ function AdminDashboard() {
       alert(error.message);
     }
   };
-  // Start escort
+
   // Start escort
   const startEscort = async (visitorId) => {
     try {
-      const response = await adminFetch(`${API_URL}/${visitorId}/status`, {
+      const response = await adminFetch(`${VISITORS_API}/${visitorId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +141,6 @@ function AdminDashboard() {
   };
 
   // Check out visitor
-  // Check out visitor
   const checkoutVisitor = async (visitorId) => {
     const confirmed = window.confirm(
       "Are you sure you want to check out this visitor?",
@@ -153,9 +149,10 @@ function AdminDashboard() {
     if (!confirmed) return;
 
     try {
-      const response = await adminFetch(`${API_URL}/${visitorId}/checkout`, {
-        method: "PATCH",
-      });
+      const response = await adminFetch(
+        `${VISITORS_API}/${visitorId}/checkout`,
+        { method: "PATCH" },
+      );
 
       const data = await response.json();
 
@@ -170,7 +167,6 @@ function AdminDashboard() {
   };
 
   // Hide visitor from Admin Dashboard only
-  // Hide visitor from Admin Dashboard only
   const hideVisitor = async (visitorId) => {
     const confirmed = window.confirm(
       "Hide this visitor from the Admin Dashboard? The record will remain in Visitor History, Reports, and Analytics.",
@@ -180,10 +176,8 @@ function AdminDashboard() {
 
     try {
       const response = await adminFetch(
-        `${API_URL}/${visitorId}/hide-from-dashboard`,
-        {
-          method: "PATCH",
-        },
+        `${VISITORS_API}/${visitorId}/hide-from-dashboard`,
+        { method: "PATCH" },
       );
 
       const data = await response.json();
@@ -250,7 +244,6 @@ function AdminDashboard() {
       <main className="admin-main">
         <div className="admin-dashboard">
           {/* Dashboard Header */}
-
           <header className="dashboard-header">
             <div className="dashboard-welcome">
               <p className="welcome-label">ADMINISTRATION PORTAL</p>
@@ -282,7 +275,6 @@ function AdminDashboard() {
           </header>
 
           {/* Dashboard Statistics */}
-
           <section className="dashboard-stats">
             <div className="stat-card">
               <h3>Total Visitors</h3>
@@ -306,7 +298,6 @@ function AdminDashboard() {
           </section>
 
           {/* Search and Filter */}
-
           <section className="dashboard-controls">
             <input
               type="text"
@@ -335,7 +326,6 @@ function AdminDashboard() {
           {error && <p className="error-message">{error}</p>}
 
           {/* Visitors Table */}
-
           <section className="table-wrapper">
             <table className="visitor-table">
               <thead>
@@ -362,7 +352,7 @@ function AdminDashboard() {
                   </tr>
                 ) : filteredVisitors.length === 0 ? (
                   <tr>
-                    <td colSpan="11">No visitors found.</td>
+                    <td colSpan="12">No visitors found.</td>
                   </tr>
                 ) : (
                   filteredVisitors.map((visitor) => (
@@ -454,14 +444,12 @@ function AdminDashboard() {
           </section>
 
           {/* Dashboard Footer */}
-
           <footer className="dashboard-footer">
             Showing {filteredVisitors.length} of {totalVisitors} visible
             visitors
           </footer>
 
           {/* Print Badge Modal */}
-
           {selectedVisitor && (
             <VisitorBadge
               visitor={selectedVisitor}

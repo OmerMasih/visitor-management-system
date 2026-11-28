@@ -128,17 +128,11 @@ function EmployeeManagement() {
       setError("");
       setMessage("");
 
-      const response = await fetch(
-        `${API_URL}/api/auth/employees/${employee._id}/reset-password`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${getToken()}`,
-          },
-          body: JSON.stringify({ newPassword }),
+      const response = await fetch(`${API_URL}/api/auth/employees`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await response.json();
 

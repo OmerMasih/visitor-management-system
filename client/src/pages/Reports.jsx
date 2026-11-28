@@ -54,7 +54,7 @@ function Reports() {
         setLoading(true);
         setError("");
 
-        const response = await adminFetch(API_URL);
+        const response = await adminFetch(VISITORS_API);
         const data = await response.json();
 
         if (!response.ok || !data.success) {

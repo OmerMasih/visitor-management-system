@@ -4,6 +4,7 @@ import "./VisitorHistory.css";
 import API_URL from "../config";
 
 const VISITORS_API = `${API_URL}/api/visitors`;
+
 // Authentication helper
 const adminFetch = async (url, options = {}) => {
   const token = sessionStorage.getItem("adminToken");
@@ -43,7 +44,7 @@ function VisitorHistory() {
       setLoading(true);
       setError("");
 
-      const response = await adminFetch(API_URL);
+      const response = await adminFetch(VISITORS_API);
       const data = await response.json();
 
       if (!response.ok || !data.success) {
@@ -73,7 +74,7 @@ function VisitorHistory() {
 
     try {
       const response = await adminFetch(
-        `${API_URL}/${visitorId}/restore-to-dashboard`,
+        `${VISITORS_API}/${visitorId}/restore-to-dashboard`,
         {
           method: "PATCH",
         },
@@ -95,13 +96,19 @@ function VisitorHistory() {
   // Permanently delete visitor
   const deleteVisitor = async (visitorId, visitorName) => {
     const confirmed = window.confirm(
-      `PERMANENT DELETION\n\nAre you sure you want to permanently delete ${visitorName}?\n\nThis record will also disappear from the Dashboard, Reports, and Analytics.\n\nThis action cannot be undone.`,
+      `PERMANENT DELETION
+
+Are you sure you want to permanently delete ${visitorName}?
+
+This record will also disappear from the Dashboard, Reports, and Analytics.
+
+This action cannot be undone.`,
     );
 
     if (!confirmed) return;
 
     try {
-      const response = await adminFetch(`${API_URL}/${visitorId}`, {
+      const response = await adminFetch(`${VISITORS_API}/${visitorId}`, {
         method: "DELETE",
       });
 
@@ -249,22 +256,35 @@ function VisitorHistory() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="11">Loading visitor records...</td>
+                    <td colSpan="12">Loading visitor records...</td>
                   </tr>
                 ) : filteredVisitors.length === 0 ? (
                   <tr>
-                    <td colSpan="11">No visitor records found.</td>
+                    <td colSpan="12">No visitor records found.</td>
                   </tr>
                 ) : (
                   filteredVisitors.map((visitor) => (
                     <tr key={visitor._id}>
                       <td>{visitor.fullName}</td>
+
                       <td>{visitor.badgeNumber || "Not assigned"}</td>
+
                       <td>{visitor.company || "—"}</td>
+
+                      <td>
+                        {Array.isArray(visitor.identificationTypes)
+                          ? visitor.identificationTypes.join(", ")
+                          : visitor.identificationTypes || "—"}
+                      </td>
+
                       <td>{visitor.personToVisit}</td>
+
                       <td>{visitor.department}</td>
+
                       <td>{visitor.purposeOfVisit}</td>
+
                       <td>{formatDate(visitor.timeIn)}</td>
+
                       <td>{formatDate(visitor.timeOut)}</td>
 
                       <td>

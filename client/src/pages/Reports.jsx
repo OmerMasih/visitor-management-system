@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import API_URL from "../config";
 
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -7,7 +8,7 @@ import autoTable from "jspdf-autotable";
 import DashboardSidebar from "../components/DashboardSidebar";
 import "./Reports.css";
 
-const API_URL = "http://localhost:5000/api/visitors";
+const VISITORS_API = `${API_URL}/api/visitors`;
 
 // Authentication helper
 const adminFetch = async (url, options = {}) => {

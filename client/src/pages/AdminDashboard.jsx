@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-
+import API_URL from "../config";
 import VisitorBadge from "../components/VisitorBadge";
 import DashboardSidebar from "../components/DashboardSidebar";
 
 import "./AdminDashboard.css";
 
-const API_URL = "http://localhost:5000/api/visitors";
+const VISITORS_API = `${API_URL}/api/visitors`;
 
 // Send administrator token with protected API requests
 const adminFetch = async (url, options = {}) => {

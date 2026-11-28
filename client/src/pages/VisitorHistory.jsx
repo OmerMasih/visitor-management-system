@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import DashboardSidebar from "../components/DashboardSidebar";
 import "./VisitorHistory.css";
+import API_URL from "../config";
 
-const API_URL = "http://localhost:5000/api/visitors";
+const VISITORS_API = `${API_URL}/api/visitors`;
 // Authentication helper
 const adminFetch = async (url, options = {}) => {
   const token = sessionStorage.getItem("adminToken");

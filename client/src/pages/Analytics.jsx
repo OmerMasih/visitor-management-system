@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-
+import API_URL from "../config";
 import {
   ResponsiveContainer,
   BarChart,
@@ -19,7 +19,7 @@ import {
 import DashboardSidebar from "../components/DashboardSidebar";
 import "./Analytics.css";
 
-const API_URL = "http://localhost:5000/api/visitors";
+const VISITORS_API = `${API_URL}/api/visitors`;
 
 const COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#9333ea", "#0891b2"];
 

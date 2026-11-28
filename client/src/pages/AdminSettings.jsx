@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "../components/DashboardSidebar";
 import "./AdminSettings.css";
+import API_URL from "../config";
 
 function AdminSettings() {
   const navigate = useNavigate();
@@ -62,20 +63,17 @@ function AdminSettings() {
     try {
       setPasswordLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/api/auth/change-password",
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
+      const response = await fetch(`${API_URL}/api/auth/create-admin`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
 
       const data = await response.json();
 
@@ -137,20 +135,17 @@ function AdminSettings() {
     try {
       setAdminLoading(true);
 
-      const response = await fetch(
-        "http://localhost:5000/api/auth/create-admin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            username: adminUsername.trim(),
-            password: adminPassword,
-          }),
+      const response = await fetch(`${API_URL}/api/auth/create-admin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          username: adminUsername.trim(),
+          password: adminPassword,
+        }),
+      });
 
       const data = await response.json();
 

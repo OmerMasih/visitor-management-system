@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardSidebar from "../components/DashboardSidebar";
 import "./EmployeeManagement.css";
+import API_URL from "../config";
 
 function EmployeeManagement() {
   const navigate = useNavigate();
@@ -27,11 +28,14 @@ function EmployeeManagement() {
       setLoading(true);
       setError("");
 
-      const response = await fetch("http://localhost:5000/api/auth/employees", {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_URL}/api/auth/employees/${employee._id}/reset-password`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const data = await response.json();
 
@@ -75,7 +79,7 @@ function EmployeeManagement() {
       setMessage("");
 
       const response = await fetch(
-        `http://localhost:5000/api/auth/employees/${employee._id}/status`,
+        `${API_URL}/api/auth/employees/${employee._id}/status`,
         {
           method: "PATCH",
           headers: {
@@ -125,7 +129,7 @@ function EmployeeManagement() {
       setMessage("");
 
       const response = await fetch(
-        `http://localhost:5000/api/auth/employees/${employee._id}/reset-password`,
+        `${API_URL}/api/auth/employees/${employee._id}/reset-password`,
         {
           method: "PATCH",
           headers: {
